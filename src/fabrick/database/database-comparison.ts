@@ -9,52 +9,58 @@ export type DatabaseCapability = {
 
 export const databaseCapabilities: DatabaseCapability[] = [
   {
-    label: "Uso principal recomendado",
-    supabase: "Produccion SaaS",
+    label: "Rol dentro de Fabrick Admin",
+    supabase: "Base SaaS tradicional opcional",
     pocketbase: "Demos/local/simple",
-    insforge: "IA/agentes",
+    insforge: "Backend activo del proyecto",
+  },
+  {
+    label: "Uso principal recomendado",
+    supabase: "Produccion SaaS con Postgres",
+    pocketbase: "Prototipos o instalacion ligera",
+    insforge: "Backend principal + IA/agentes",
   },
   {
     label: "Auth integrado",
     supabase: "Si",
     pocketbase: "Si",
-    insforge: "Depende de la configuracion",
+    insforge: "Segun configuracion del proyecto",
   },
   {
     label: "Base relacional fuerte",
     supabase: "Si, Postgres",
     pocketbase: "SQLite embebido",
-    insforge: "Orientado a backend agent-native",
+    insforge: "Backend gestionado orientado a agentes",
   },
   {
     label: "Storage de archivos",
     supabase: "Si",
     pocketbase: "Si",
-    insforge: "Depende del stack",
+    insforge: "Segun configuracion",
   },
   {
     label: "Multi-negocio / multi-tenant",
-    supabase: "Muy recomendado",
-    pocketbase: "Posible, requiere cuidado",
-    insforge: "Experimental para este caso",
+    supabase: "Muy fuerte con RLS",
+    pocketbase: "Posible, requiere reglas manuales",
+    insforge: "Debe modelarse por business_id",
   },
   {
     label: "Demos 72h seguras",
     supabase: "Muy recomendado",
     pocketbase: "Posible",
-    insforge: "Posible como integracion",
+    insforge: "Recomendado si sera backend activo",
   },
   {
     label: "Facilidad inicial",
     supabase: "Media",
     pocketbase: "Alta",
-    insforge: "Media/experimental",
+    insforge: "Media",
   },
   {
     label: "Escalabilidad comercial",
     supabase: "Alta",
     pocketbase: "Media",
-    insforge: "Por validar",
+    insforge: "Por validar con uso real",
   },
 ];
 
@@ -82,9 +88,9 @@ export function getProviderEnvStatus(env: NodeJS.ProcessEnv): ProviderEnvStatus[
 }
 
 export const databaseRecommendation = {
-  primary: "supabase" as DatabaseProviderId,
-  secondary: "pocketbase" as DatabaseProviderId,
-  experimental: "insforge" as DatabaseProviderId,
+  primary: "insforge" as DatabaseProviderId,
+  secondary: "supabase" as DatabaseProviderId,
+  local: "pocketbase" as DatabaseProviderId,
   message:
-    "Para la primera version vendible usa Supabase como base principal. PocketBase puede servir para demos locales o instalaciones simples. InsForge dejalo como modulo futuro para IA/agentes.",
+    "InsForge queda como backend activo del proyecto. Supabase queda como alternativa fuerte para Postgres/Auth/Storage y PocketBase como opcion liviana para demos locales o instalaciones simples.",
 };
