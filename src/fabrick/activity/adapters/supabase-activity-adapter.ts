@@ -29,9 +29,7 @@ export async function writeActivityToSupabase(record: ActivityRecord): Promise<A
     return {
       ok: response.ok,
       provider: "supabase",
-      message: response.ok
-        ? "Activity guardada en Supabase."
-        : `Supabase respondio con estado ${response.status}.`,
+      message: response.ok ? "Activity guardada en Supabase." : `Supabase respondio con estado ${response.status}.`,
       record,
     };
   } catch (error) {

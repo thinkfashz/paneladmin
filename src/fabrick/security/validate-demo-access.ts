@@ -57,7 +57,10 @@ export function validateDemoAccessInput(input: DemoAccessInput): DemoAccessResul
   return null;
 }
 
-export function validateDemoAccessRecord(input: DemoAccessInput, record: DemoAccessRecord | null): DemoAccessResult {
+export async function validateDemoAccessRecord(
+  input: DemoAccessInput,
+  record: DemoAccessRecord | null,
+): Promise<DemoAccessResult> {
   const inputError = validateDemoAccessInput(input);
   if (inputError) return inputError;
 
@@ -69,7 +72,7 @@ export function validateDemoAccessRecord(input: DemoAccessInput, record: DemoAcc
     };
   }
 
-  const incomingHash = hashToken(input.token!);
+  const incomingHash = await hashToken(input.token as string);
 
   if (incomingHash !== record.tokenHash || record.businessSlug !== input.slug) {
     return {

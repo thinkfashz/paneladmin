@@ -83,8 +83,9 @@ export function maskIp(ip?: string | null) {
   return "masked";
 }
 
-export function createAccessLogPayload(input: AccessLogInput): AccessLogPayload {
+export async function createAccessLogPayload(input: AccessLogInput): Promise<AccessLogPayload> {
   const secret = process.env.ACCESS_LOG_SECRET ?? "not-configured";
+  const ip_hash = input.ip ? await sha256(`${secret}:${input.ip}`) : null;
 
   return {
     event_type: input.eventType,
@@ -93,7 +94,7 @@ export function createAccessLogPayload(input: AccessLogInput): AccessLogPayload 
     user_id: input.userId ?? null,
     user_email: input.userEmail ?? null,
     business_id: input.businessId ?? null,
-    ip_hash: input.ip ? sha256(`${secret}:${input.ip}`) : null,
+    ip_hash,
     ip_masked: maskIp(input.ip),
     user_agent: input.userAgent ?? null,
     device_type: getDeviceType(input.userAgent),
@@ -106,7 +107,7 @@ export function createAccessLogPayload(input: AccessLogInput): AccessLogPayload 
 }
 
 export async function writeAccessLog(input: AccessLogInput) {
-  const payload = createAccessLogPayload(input);
+  const payload = await createAccessLogPayload(input);
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[access-log]", payload);

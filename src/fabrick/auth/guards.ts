@@ -1,4 +1,4 @@
-import { hasPermission, type AuthPermission } from "./permissions";
+import { type AuthPermission, hasPermission } from "./permissions";
 import { AUTH_ROLES, type AuthRole } from "./roles";
 import type { AuthSessionState } from "./session";
 

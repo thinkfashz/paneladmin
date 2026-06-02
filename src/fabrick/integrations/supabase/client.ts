@@ -37,7 +37,7 @@ export async function testSupabaseConnection(): Promise<SupabaseHealthResult> {
     const response = await fetch(`${config.url}/rest/v1/`, {
       method: "GET",
       headers: {
-        apikey: config.anonKey!,
+        apikey: config.anonKey as string,
         Authorization: `Bearer ${config.anonKey}`,
       },
       cache: "no-store",

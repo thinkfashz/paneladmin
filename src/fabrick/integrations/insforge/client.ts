@@ -34,11 +34,11 @@ export async function testInsforgeConnection(): Promise<InsforgeHealthResult> {
   }
 
   try {
-    const response = await fetch(config.baseUrl!, {
+    const response = await fetch(config.baseUrl as string, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${config.anonKey}`,
-        "x-project-id": config.projectId!,
+        "x-project-id": config.projectId as string,
       },
       cache: "no-store",
     });

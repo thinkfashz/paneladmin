@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import type { BrandTheme } from "../types";
 
 type BrandLoadingScreenProps = {
@@ -42,13 +43,15 @@ export function BrandLoadingScreen({ brand, onFinish }: BrandLoadingScreenProps)
             // eslint-disable-next-line @next/next/no-img-element
             <img src={brand.identity.logoUrl} alt={brand.identity.name} className="h-14 w-14 object-contain" />
           ) : (
-            <span className="text-3xl font-bold" style={{ color: brand.identity.secondaryColor }}>
+            <span className="font-bold text-3xl" style={{ color: brand.identity.secondaryColor }}>
               {brand.identity.name.slice(0, 1).toUpperCase()}
             </span>
           )}
         </div>
 
-        {brand.loading.showName ? <h1 className="text-2xl font-semibold tracking-tight">{brand.identity.name}</h1> : null}
+        {brand.loading.showName ? (
+          <h1 className="font-semibold text-2xl tracking-tight">{brand.identity.name}</h1>
+        ) : null}
         <p className="mt-2 text-sm opacity-70">{brand.loading.message}</p>
 
         <div className="mt-8 h-2 w-full overflow-hidden rounded-full bg-black/10">

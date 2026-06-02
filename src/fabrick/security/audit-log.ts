@@ -27,12 +27,13 @@ export type AuditEventPayload = {
   created_at: string;
 };
 
-export function createAuditEventPayload(input: AuditEventInput): AuditEventPayload {
+export async function createAuditEventPayload(input: AuditEventInput): Promise<AuditEventPayload> {
+  const ip_hash = input.ip ? await sha256(input.ip) : null;
   return {
     business_id: input.businessId ?? null,
     event_type: input.eventType,
     metadata: input.metadata ?? {},
-    ip_hash: input.ip ? sha256(input.ip) : null,
+    ip_hash,
     user_agent: input.userAgent ?? null,
     created_at: new Date().toISOString(),
   };
@@ -52,7 +53,7 @@ export function getUserAgent(headers: Headers) {
 // Esta funcion queda como adaptador neutral. El proveedor real debe implementarse
 // en InsForge, Supabase o PocketBase segun la conexion activa.
 export async function writeAuditEvent(input: AuditEventInput) {
-  const payload = createAuditEventPayload(input);
+  const payload = await createAuditEventPayload(input);
 
   if (process.env.NODE_ENV !== "production") {
     console.info("[audit-event]", payload);

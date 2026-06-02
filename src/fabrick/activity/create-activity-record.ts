@@ -2,7 +2,8 @@ import { getActivityBrowserFamily, getActivityDeviceType, getActivityOsFamily } 
 import { hashActivityIp, maskActivityIp } from "./ip";
 import type { ActivityRecord, ActivityRecordInput } from "./types";
 
-export function createActivityRecord(input: ActivityRecordInput): ActivityRecord {
+export async function createActivityRecord(input: ActivityRecordInput): Promise<ActivityRecord> {
+  const ip_hash = await hashActivityIp(input.ip);
   return {
     event_type: input.eventType,
     path: input.path,
@@ -10,7 +11,7 @@ export function createActivityRecord(input: ActivityRecordInput): ActivityRecord
     user_id: input.userId ?? null,
     user_email: input.userEmail ?? null,
     business_id: input.businessId ?? null,
-    ip_hash: hashActivityIp(input.ip),
+    ip_hash,
     ip_masked: maskActivityIp(input.ip),
     user_agent: input.userAgent ?? null,
     device_type: getActivityDeviceType(input.userAgent),

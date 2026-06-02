@@ -1,5 +1,5 @@
-import { AUTH_ROLES } from "./roles";
 import { getCurrentUser } from "./get-current-user";
+import { AUTH_ROLES } from "./roles";
 import type { AuthRequestContext } from "./types";
 
 export type RequireSuperadminResult = {

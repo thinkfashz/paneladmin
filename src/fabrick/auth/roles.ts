@@ -7,11 +7,7 @@ export const AUTH_ROLES = {
 
 export type AuthRole = (typeof AUTH_ROLES)[keyof typeof AUTH_ROLES];
 
-export const protectedRoles: AuthRole[] = [
-  AUTH_ROLES.SUPERADMIN,
-  AUTH_ROLES.BUSINESS_OWNER,
-  AUTH_ROLES.STAFF,
-];
+export const protectedRoles: AuthRole[] = [AUTH_ROLES.SUPERADMIN, AUTH_ROLES.BUSINESS_OWNER, AUTH_ROLES.STAFF];
 
 export function isAuthRole(value: unknown): value is AuthRole {
   return typeof value === "string" && Object.values(AUTH_ROLES).includes(value as AuthRole);

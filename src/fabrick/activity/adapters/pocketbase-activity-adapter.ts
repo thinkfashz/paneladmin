@@ -25,9 +25,7 @@ export async function writeActivityToPocketBase(record: ActivityRecord): Promise
     return {
       ok: response.ok,
       provider: "pocketbase",
-      message: response.ok
-        ? "Activity guardada en PocketBase."
-        : `PocketBase respondio con estado ${response.status}.`,
+      message: response.ok ? "Activity guardada en PocketBase." : `PocketBase respondio con estado ${response.status}.`,
       record,
     };
   } catch (error) {

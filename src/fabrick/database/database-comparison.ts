@@ -1,4 +1,4 @@
-import { databaseProviders, type DatabaseProviderId } from "./providers";
+import { type DatabaseProviderId, databaseProviders } from "./providers";
 
 export type DatabaseCapability = {
   label: string;
