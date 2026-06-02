@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { users } from "@/data/users";
+import { BrandLoadingGate } from "@/fabrick/branding/components/brand-loading-gate";
+import { getBrandTheme } from "@/fabrick/branding/get-brand-theme";
 import { SIDEBAR_COLLAPSIBLE_VALUES, SIDEBAR_VARIANT_VALUES } from "@/lib/preferences/layout";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
@@ -27,6 +29,9 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
     getPreference("sidebar_variant", SIDEBAR_VARIANT_VALUES, "inset"),
     getPreference("sidebar_collapsible", SIDEBAR_COLLAPSIBLE_VALUES, "icon"),
   ]);
+
+  // For testing, assuming businessId is either fetched from the user or we use a fallback
+  const brand = await getBrandTheme();
 
   return (
     <SidebarProvider
@@ -83,7 +88,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         </header>
         {/* Pages can set data-content-padding="false" to render full-bleed app layouts. */}
         <div className="h-full p-4 has-data-[content-padding=false]:p-0 md:p-6 md:has-data-[content-padding=false]:p-0">
-          {children}
+          <BrandLoadingGate brand={brand}>{children}</BrandLoadingGate>
         </div>
       </SidebarInset>
     </SidebarProvider>

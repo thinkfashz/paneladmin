@@ -1,5 +1,5 @@
-import { AUTH_ROLES } from "./roles";
 import { getCurrentUser } from "./get-current-user";
+import { AUTH_ROLES } from "./roles";
 import type { AuthRequestContext } from "./types";
 
 export type RequireBusinessUserResult = {
@@ -11,7 +11,7 @@ export type RequireBusinessUserResult = {
 
 export async function requireBusinessUserAuth(
   context: AuthRequestContext = {},
-  businessId?: string | null
+  businessId?: string | null,
 ): Promise<RequireBusinessUserResult> {
   const result = await getCurrentUser(context);
 

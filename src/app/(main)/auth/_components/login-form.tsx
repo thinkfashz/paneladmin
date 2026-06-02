@@ -26,14 +26,21 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    toast("You submitted the following values", {
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const { loginAction } = await import("@/fabrick/auth/actions/login-action");
+      const result = await loginAction(data.email, data.password);
+
+      if (result.ok) {
+        toast.success(result.message);
+        // Navigate or update state as needed
+        window.location.href = "/dashboard";
+      } else {
+        toast.error(result.message);
+      }
+    } catch (_err) {
+      toast.error("Error intentando iniciar sesión");
+    }
   };
 
   return (

@@ -1,12 +1,12 @@
-import { createActivityRecord } from "./create-activity-record";
 import { writeActivityToInsForge } from "./adapters/insforge-activity-adapter";
 import { writeActivityToPocketBase } from "./adapters/pocketbase-activity-adapter";
 import { writeActivityToSupabase } from "./adapters/supabase-activity-adapter";
+import { createActivityRecord } from "./create-activity-record";
 import { getActivityProvider } from "./provider";
 import type { ActivityRecordInput, ActivityWriteResult } from "./types";
 
 export async function writeActivityRecord(input: ActivityRecordInput): Promise<ActivityWriteResult> {
-  const record = createActivityRecord(input);
+  const record = await createActivityRecord(input);
   const provider = getActivityProvider();
 
   if (provider === "insforge") {

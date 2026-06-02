@@ -1,4 +1,5 @@
-import crypto from "node:crypto";
+// Fallback for edge runtime where node:crypto is not available
+// We'll use Web Crypto API
 
 export type DemoTokenPayload = {
   token: string;
@@ -7,22 +8,38 @@ export type DemoTokenPayload = {
 };
 
 export function createRandomToken(bytes = 32) {
-  return crypto.randomBytes(bytes).toString("base64url");
+  const array = new Uint8Array(bytes);
+  crypto.getRandomValues(array);
+  // Base64Url encoding simulation
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
 }
 
-export function hashToken(token: string) {
+export async function hashToken(token: string) {
   const secret = process.env.DEMO_TOKEN_SECRET;
 
   if (!secret) {
     throw new Error("DEMO_TOKEN_SECRET no esta configurado.");
   }
 
-  return crypto.createHmac("sha256", secret).update(token).digest("hex");
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+
+  const tokenData = encoder.encode(token);
+  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, tokenData);
+  const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+  const signatureHex = signatureArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return signatureHex;
 }
 
-export function createDemoToken(hours = Number(process.env.NEXT_PUBLIC_DEFAULT_DEMO_HOURS ?? 72)): DemoTokenPayload {
+export async function createDemoToken(
+  hours = Number(process.env.NEXT_PUBLIC_DEFAULT_DEMO_HOURS ?? 72),
+): Promise<DemoTokenPayload> {
   const token = createRandomToken();
-  const tokenHash = hashToken(token);
+  const tokenHash = await hashToken(token);
   const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
 
   return {

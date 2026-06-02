@@ -16,7 +16,7 @@ export function maskActivityIp(ip?: string | null) {
   return "masked";
 }
 
-export function hashActivityIp(ip?: string | null) {
+export async function hashActivityIp(ip?: string | null) {
   if (!ip) return null;
 
   const secret = process.env.ACCESS_LOG_SECRET ?? process.env.DEMO_TOKEN_SECRET ?? "not-configured";

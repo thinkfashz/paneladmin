@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
+
 import type { BrandTheme } from "../types";
 import { BrandLoadingScreen } from "./brand-loading-screen";
 
@@ -15,7 +16,7 @@ export function BrandLoadingGate({ brand, children }: BrandLoadingGateProps) {
   return (
     <>
       {!ready ? <BrandLoadingScreen brand={brand} onFinish={() => setReady(true)} /> : null}
-      <div className={ready ? "animate-in fade-in duration-500" : "opacity-0"}>{children}</div>
+      <div className={ready ? "fade-in animate-in duration-500" : "opacity-0"}>{children}</div>
     </>
   );
 }

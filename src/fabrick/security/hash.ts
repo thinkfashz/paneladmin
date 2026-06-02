@@ -1,20 +1,36 @@
-import crypto from "node:crypto";
+// Fallback for edge runtime where node:crypto is not available
+// We'll use Web Crypto API for sha256 and fallback logic for timingSafeEqual since Web Crypto does not have it.
 
-export function sha256(value: string) {
-  return crypto.createHash("sha256").update(value).digest("hex");
+export async function sha256(value: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hashHex;
 }
 
-export function hmacSha256(value: string, secret: string) {
-  return crypto.createHmac("sha256", secret).update(value).digest("hex");
+export async function hmacSha256(value: string, secret: string) {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+
+  const valueData = encoder.encode(value);
+  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, valueData);
+  const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+  const signatureHex = signatureArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return signatureHex;
 }
 
 export function safeCompare(a: string, b: string) {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
+  if (a.length !== b.length) return false;
 
-  if (left.length !== right.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; ++i) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
 
-  return crypto.timingSafeEqual(left, right);
+  return mismatch === 0;
 }
 
 export function maskSecret(value?: string | null) {

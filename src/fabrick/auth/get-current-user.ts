@@ -1,8 +1,8 @@
-import { getAuthProvider } from "./provider";
-import type { AuthLookupResult, AuthRequestContext } from "./types";
 import { createDevInsforgeSuperadmin, getInsforgeCurrentUser } from "./adapters/insforge-auth-adapter";
 import { getPocketBaseCurrentUser } from "./adapters/pocketbase-auth-adapter";
 import { getSupabaseCurrentUser } from "./adapters/supabase-auth-adapter";
+import { getAuthProvider } from "./provider";
+import type { AuthLookupResult, AuthRequestContext } from "./types";
 
 export async function getCurrentUser(context: AuthRequestContext = {}): Promise<AuthLookupResult> {
   const devSuperadmin = createDevInsforgeSuperadmin();
