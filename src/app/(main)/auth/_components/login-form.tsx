@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { loginAction } from "@/fabrick/auth/actions/login-action";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -28,7 +29,7 @@ export function LoginForm() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      const { loginAction } = await import("@/fabrick/auth/actions/login-action");
+      // Using standard static import for Next.js Server Actions
       const result = await loginAction(data.email, data.password);
 
       if (result.ok) {
