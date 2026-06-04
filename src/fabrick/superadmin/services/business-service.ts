@@ -2,10 +2,21 @@ import { getActiveDatabaseProvider } from "@/fabrick/database/get-active-provide
 
 import {
   createInsforgeBusiness,
+  getInsforgeBusinessBySlug,
   getInsforgeBusinesses,
   updateInsforgeBusiness,
 } from "../adapters/insforge-business-adapter";
 import type { Business, CreateBusinessInput, UpdateBusinessInput } from "../types";
+
+export async function getBusinessBySlug(slug: string): Promise<Business | null> {
+  const provider = getActiveDatabaseProvider();
+
+  if (provider === "insforge") {
+    return getInsforgeBusinessBySlug(slug);
+  }
+
+  return null;
+}
 
 export async function getBusinesses(): Promise<Business[]> {
   const provider = getActiveDatabaseProvider();

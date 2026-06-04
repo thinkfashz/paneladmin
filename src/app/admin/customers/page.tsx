@@ -1,12 +1,20 @@
+import { redirect } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
+import { requireBusinessUserAuth } from "@/fabrick/auth/require-business-user";
 import { CustomerTable } from "@/fabrick/crm/components/customer-table";
 import { getCustomers } from "@/fabrick/crm/services/customer-service";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
-  // Simulando obtención del businessId desde el Auth Context.
-  const businessId = "00000000-0000-0000-0000-000000000000";
+  const auth = await requireBusinessUserAuth();
+
+  if (!auth.allowed || !auth.businessId) {
+    redirect("/auth/v1/login");
+  }
+
+  const businessId = auth.businessId;
   const customers = await getCustomers(businessId);
 
   return (
