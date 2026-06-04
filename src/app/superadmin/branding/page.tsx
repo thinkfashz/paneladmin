@@ -13,7 +13,7 @@ export default async function BrandingPage() {
   const auth = await requireSuperadminAuth();
 
   if (!auth.allowed) {
-    redirect("/login");
+    redirect("/auth/v1/login");
   }
 
   // To simulate, we could allow the superadmin to edit a specific business.

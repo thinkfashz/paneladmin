@@ -11,7 +11,7 @@ export default async function BusinessesPage() {
   const auth = await requireSuperadminAuth();
 
   if (!auth.allowed) {
-    redirect("/login");
+    redirect("/auth/v1/login");
   }
 
   const businesses = await getBusinesses();
