@@ -98,6 +98,7 @@
     }
   },
   "javascript": {
+    "globals": ["jest", "describe", "it", "expect", "beforeEach"],
     "formatter": {
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",
