@@ -11,7 +11,7 @@ export default async function CustomersPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-6">
-      <section className="flex flex-col md:flex-row justify-between md:items-center gap-4 rounded-2xl border bg-background p-6 shadow-sm">
+      <section className="flex flex-col justify-between gap-4 rounded-2xl border bg-background p-6 shadow-sm md:flex-row md:items-center">
         <div className="flex flex-col gap-2">
           <p className="font-medium text-muted-foreground text-sm">CRM / Base de Datos</p>
           <h1 className="font-semibold text-3xl tracking-tight">Directorio de Clientes</h1>

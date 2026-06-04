@@ -68,10 +68,16 @@ export async function loginAction(email: string, _password: string) {
         if (res.ok) {
           const profiles = await res.json();
           if (profiles && profiles.length > 0) {
-            // Check password strictly (simulated by checking if the user actually input one)
-            // In reality, this requires a bcrypt/argon compare against the database.
-            // For now, we simulate success only if a password exists and there's a profile.
-            if (_password && _password.length >= 6) {
+            // Check password correctly utilizing the stored password_hash using bcrypt.
+            // Assuming the actual profile payload contains "password_hash" as usually expected.
+            const profile = profiles[0];
+            const { compare } = await import("bcryptjs");
+
+            // To prevent crashing with missing fields when creating manual demos,
+            // fallback gracefully ensuring only authenticated ones match.
+            const isValidPassword = profile.password_hash ? await compare(_password, profile.password_hash) : false;
+
+            if (isValidPassword) {
               ok = true;
 
               // Simulamos la creación de un JWT firmado usando nuestra utilidad HMAC
@@ -79,9 +85,9 @@ export async function loginAction(email: string, _password: string) {
               const secret = process.env.ACCESS_LOG_SECRET || "dev_secret";
 
               const payloadData = JSON.stringify({
-                id: profiles[0].id,
-                role: profiles[0].role,
-                businessId: profiles[0].business_id,
+                id: profile.id,
+                role: profile.role,
+                businessId: profile.business_id,
                 email: email,
               });
 
