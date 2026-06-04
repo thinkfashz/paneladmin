@@ -2,6 +2,41 @@ import { getInsforgeConfig } from "@/fabrick/integrations/insforge/client";
 
 import type { Business, CreateBusinessInput, UpdateBusinessInput } from "../types";
 
+export async function getInsforgeBusinessBySlug(slug: string): Promise<Business | null> {
+  const config = getInsforgeConfig();
+  if (!config.baseUrl || !config.anonKey || !config.projectId) {
+    return null;
+  }
+
+  try {
+    const url = new URL(`/rest/v1/businesses`, config.baseUrl);
+    url.searchParams.set("select", "*");
+    url.searchParams.set("slug", `eq.${slug}`);
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${config.anonKey}`,
+        "x-project-id": config.projectId,
+      },
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    return data[0];
+  } catch (err) {
+    console.error("Error fetching business by slug from InsForge:", err);
+    return null;
+  }
+}
+
 export async function getInsforgeBusinesses(): Promise<Business[]> {
   const config = getInsforgeConfig();
   if (!config.baseUrl || !config.anonKey || !config.projectId) {
