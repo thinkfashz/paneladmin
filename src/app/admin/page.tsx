@@ -3,18 +3,19 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import {
+  ArrowRight,
+  BadgePercent,
   BarChart3,
   Calculator,
+  CheckCircle2,
   FileText,
   Package,
   Paintbrush,
   Settings,
+  Store,
   TrendingUp,
   Users,
-  ArrowRight,
-  Store,
   AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,6 @@ const MODULES = [
     icon: BarChart3,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    status: "activo",
   },
   {
     href: "/admin/customers",
@@ -41,7 +41,6 @@ const MODULES = [
     icon: Users,
     color: "text-violet-500",
     bg: "bg-violet-500/10",
-    status: "activo",
   },
   {
     href: "/admin/productos",
@@ -50,7 +49,6 @@ const MODULES = [
     icon: Package,
     color: "text-amber-500",
     bg: "bg-amber-500/10",
-    status: "activo",
   },
   {
     href: "/admin/analytics",
@@ -59,7 +57,6 @@ const MODULES = [
     icon: TrendingUp,
     color: "text-green-500",
     bg: "bg-green-500/10",
-    status: "activo",
   },
   {
     href: "/admin/contabilidad",
@@ -68,7 +65,14 @@ const MODULES = [
     icon: Calculator,
     color: "text-red-500",
     bg: "bg-red-500/10",
-    status: "activo",
+  },
+  {
+    href: "/admin/beneficios",
+    label: "Beneficios Fiscales",
+    description: "Ahorra impuestos con créditos y beneficios tributarios",
+    icon: BadgePercent,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
   },
   {
     href: "/admin/cotizaciones",
@@ -77,7 +81,6 @@ const MODULES = [
     icon: FileText,
     color: "text-cyan-500",
     bg: "bg-cyan-500/10",
-    status: "activo",
   },
   {
     href: "/admin/diseno",
@@ -86,7 +89,6 @@ const MODULES = [
     icon: Paintbrush,
     color: "text-pink-500",
     bg: "bg-pink-500/10",
-    status: "activo",
   },
   {
     href: "/admin/configuracion",
@@ -95,7 +97,6 @@ const MODULES = [
     icon: Settings,
     color: "text-zinc-500",
     bg: "bg-zinc-500/10",
-    status: "activo",
   },
 ] as const;
 
@@ -119,7 +120,9 @@ export default async function AdminHomePage() {
         <div>
           <p className="font-medium text-muted-foreground text-sm">{saludo} 👋</p>
           <h1 className="font-bold text-2xl tracking-tight md:text-3xl">Panel de Administración</h1>
-          <p className="mt-1 text-muted-foreground text-sm">Período: <span className="capitalize">{mesNombre}</span></p>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Período: <span className="capitalize">{mesNombre}</span>
+          </p>
         </div>
         <Link
           href="/"
@@ -130,22 +133,17 @@ export default async function AdminHomePage() {
         </Link>
       </section>
 
-      {/* Alertas rápidas */}
+      {/* Alerta F29 */}
       {(f29Urgente || f29Vencido) && (
         <Link href="/admin/contabilidad">
           <div
             className={cn(
               "flex items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/30",
-              f29Vencido
-                ? "border-red-500/30 bg-red-500/5"
-                : "border-amber-500/30 bg-amber-500/5",
+              f29Vencido ? "border-red-500/30 bg-red-500/5" : "border-amber-500/30 bg-amber-500/5",
             )}
           >
             <AlertCircle
-              className={cn(
-                "h-5 w-5 shrink-0",
-                f29Vencido ? "text-red-500" : "text-amber-500",
-              )}
+              className={cn("h-5 w-5 shrink-0", f29Vencido ? "text-red-500" : "text-amber-500")}
             />
             <p
               className={cn(
@@ -176,10 +174,10 @@ export default async function AdminHomePage() {
       {/* Módulos */}
       <div>
         <h2 className="mb-3 font-semibold text-lg">Módulos</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map(({ href, label, description, icon: Icon, color, bg }) => (
             <Link key={href} href={href}>
-              <Card className="group h-full transition-all hover:shadow-md hover:-translate-y-0.5">
+              <Card className="group h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardContent className="flex flex-col gap-3 p-4">
                   <div className="flex items-start justify-between">
                     <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl", bg)}>

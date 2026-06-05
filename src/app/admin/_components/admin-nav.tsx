@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BadgePercent,
   BarChart3,
   Calculator,
   FileText,
@@ -21,10 +22,11 @@ const adminNav = [
   { href: "/admin/customers", label: "Clientes", icon: Users },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
-  { href: "/admin/contabilidad", label: "F29 / SII", icon: Calculator },
+  { href: "/admin/contabilidad", label: "F29 / SII", icon: Calculator },
+  { href: "/admin/beneficios", label: "Beneficios", icon: BadgePercent },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
   { href: "/admin/diseno", label: "Diseño", icon: Paintbrush },
-  { href: "/admin/configuracion", label: "Configuración", icon: Settings },
+  { href: "/admin/configuracion", label: "Config.", icon: Settings },
 ];
 
 export function AdminNav() {
@@ -33,10 +35,7 @@ export function AdminNav() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2.5 sm:px-6">
-        <Link
-          href="/admin"
-          className="flex shrink-0 items-center gap-1.5 font-bold text-sm"
-        >
+        <Link href="/admin" className="flex shrink-0 items-center gap-1.5 font-bold text-sm">
           <span className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground text-xs">
             A
           </span>
@@ -51,7 +50,7 @@ export function AdminNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
+                  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
