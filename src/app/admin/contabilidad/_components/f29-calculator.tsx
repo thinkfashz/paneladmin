@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 const IVA_RATE = 0.19;
 
@@ -54,16 +55,20 @@ export function F29Calculator() {
           </p>
         </div>
         <Badge
-          className={totalAPagar > 0 ? "bg-red-500/10 text-red-700 border-red-500/30" : "bg-green-500/10 text-green-700 border-green-500/30"}
           variant="outline"
+          className={cn(
+            totalAPagar > 0
+              ? "border-red-500/30 bg-red-500/10 text-red-700"
+              : "border-green-500/30 bg-green-500/10 text-green-700",
+          )}
         >
-          {totalAPagar > 0 ? `A pagar: ${fmt(totalAPagar)}` : "Sin pago este período"}
+          {totalAPagar > 0 ? `A pagar: ${fmt(totalAPagar)}` : ventas > 0 ? "Sin pago" : "Ingresa datos"}
         </Badge>
       </CardHeader>
       <CardContent className="grid gap-8 md:grid-cols-2">
         {/* Inputs */}
         <div className="flex flex-col gap-4">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Datos del período</h3>
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">Datos del período</h3>
           <div className="grid gap-2">
             <Label>Período</Label>
             <Input type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} />
@@ -76,7 +81,9 @@ export function F29Calculator() {
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(PPM_RATES).map(([key, val]) => (
-                  <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {val.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -101,16 +108,16 @@ export function F29Calculator() {
               onChange={(e) => setComprasNetas(e.target.value)}
             />
           </div>
-          <div className="rounded-lg border bg-amber-500/5 border-amber-500/20 p-3 text-xs text-amber-700">
-            <strong>Recordatorio legal:</strong> El F29 debe declararse hasta el día 12 del mes siguiente al período.
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-amber-700 text-xs">
+            <strong>Recordatorio:</strong> El F29 debe declararse hasta el día 12 del mes siguiente.
             La no declaración implica multa según Art. 97 N°11 del Código Tributario.
           </div>
         </div>
 
-        {/* Results */}
+        {/* Resultados */}
         <div className="flex flex-col gap-3">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Resumen F29</h3>
-          <div className="rounded-xl border bg-muted/10 p-5 space-y-3">
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">Resumen F29</h3>
+          <div className="space-y-3 rounded-xl border bg-muted/10 p-5">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Ventas netas</span>
               <span className="font-medium">{fmt(ventas)}</span>
@@ -126,17 +133,17 @@ export function F29Calculator() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">IVA Crédito Fiscal (19%)</span>
-              <span className="font-medium text-green-600">- {fmt(ivaCredito)}</span>
+              <span className="font-medium text-green-600">− {fmt(ivaCredito)}</span>
             </div>
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>IVA Neto a pagar</span>
-              <span className={ivaAPagar > 0 ? "text-red-600" : "text-green-600"}>{fmt(ivaAPagar)}</span>
+              <span className={cn(ivaAPagar > 0 ? "text-red-600" : "text-green-600")}>{fmt(ivaAPagar)}</span>
             </div>
             {remanente > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-green-600">Remanente Crédito Fiscal</span>
-                <span className="text-green-600 font-medium">{fmt(remanente)} ↗</span>
+                <span className="font-medium text-green-600">{fmt(remanente)} ↗</span>
               </div>
             )}
             <Separator />
@@ -145,16 +152,16 @@ export function F29Calculator() {
               <span className="font-medium text-amber-600">+ {fmt(ppmMonto)}</span>
             </div>
             <Separator />
-            <div className="flex justify-between font-bold text-xl pt-1">
+            <div className="flex justify-between pt-1 font-bold text-xl">
               <span>Total F29</span>
-              <span className={totalAPagar > 0 ? "text-red-600" : "text-green-600"}>{fmt(totalAPagar)}</span>
+              <span className={cn(totalAPagar > 0 ? "text-red-600" : "text-green-600")}>{fmt(totalAPagar)}</span>
             </div>
           </div>
-          <p className="text-muted-foreground text-xs">
-            Cálculo referencial. Consulta con tu contador para declaración oficial.
-          </p>
+          <p className="text-muted-foreground text-xs">Cálculo referencial. Consulta con tu contador para declaración oficial.</p>
           <div className="flex gap-2">
-            <Button className="flex-1" variant="outline">Ver detalle</Button>
+            <Button className="flex-1" variant="outline">
+              Ver detalle
+            </Button>
             <Button className="flex-1">Simular declaración</Button>
           </div>
         </div>
