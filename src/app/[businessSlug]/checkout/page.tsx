@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { MotorSatelital } from "@/fabrick/store/checkout/motor-satelital";
 import { getBusinessBySlug } from "@/fabrick/superadmin/services/business-service";
 
+import { PaymentSelector } from "./_components/payment-selector";
+
 export const dynamic = "force-dynamic";
 
 type CheckoutPageProps = {
@@ -19,14 +21,12 @@ type CheckoutPageProps = {
   searchParams: { total?: string };
 };
 
-const paymentMethods = ["Tarjeta de crédito/débito", "Transferencia bancaria", "Mercado Pago"];
-
 export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
   const business = await getBusinessBySlug(params.businessSlug);
   if (!business || business.status === "blocked") notFound();
 
   const subtotal = Number(searchParams.total ?? 0);
-  const iva = subtotal * 0.19;
+  const iva = Math.round(subtotal * 0.19);
   const total = subtotal + iva;
 
   return (
@@ -36,7 +36,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
           <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <Link href={`/${params.businessSlug}`}>
               <ArrowLeft className="h-4 w-4" />
-              Volver a la tienda
+              Volver
             </Link>
           </Button>
           <Separator orientation="vertical" className="h-5" />
@@ -52,7 +52,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-6 lg:col-span-2">
-            {/* Contact info */}
+            {/* Datos de contacto */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Información de contacto</CardTitle>
@@ -80,43 +80,11 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
             {/* Motor Satelital */}
             <MotorSatelital />
 
-            {/* Payment */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Método de pago</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {paymentMethods.map((method, i) => (
-                    <div
-                      key={method}
-                      className={`cursor-pointer rounded-xl border px-3 py-3 text-center text-sm transition-colors hover:border-primary hover:bg-primary/5 ${
-                        i === 0 ? "border-primary bg-primary/5 font-medium" : "bg-muted/30"
-                      }`}
-                    >
-                      {method}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <Label htmlFor="card">Número de tarjeta</Label>
-                    <Input id="card" placeholder="1234 5678 9012 3456" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="expiry">Vencimiento</Label>
-                    <Input id="expiry" placeholder="MM/AA" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input id="cvv" placeholder="123" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Pago */}
+            <PaymentSelector />
           </div>
 
-          {/* Order summary */}
+          {/* Resumen */}
           <div>
             <Card className="sticky top-4">
               <CardHeader>
@@ -126,11 +94,11 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${subtotal.toFixed(0)}</span>
+                    <span>${subtotal.toLocaleString("es-CL")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">IVA (19%)</span>
-                    <span>${iva.toFixed(0)}</span>
+                    <span>${iva.toLocaleString("es-CL")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Envío</span>
@@ -140,7 +108,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
                 <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(0)}</span>
+                  <span>${total.toLocaleString("es-CL")}</span>
                 </div>
                 <Button className="w-full" size="lg">
                   Confirmar pedido
