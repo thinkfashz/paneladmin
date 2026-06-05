@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { Check, Palette, RefreshCw, Type } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,7 +59,6 @@ export function BrandEditor() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Identidad */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -99,7 +97,6 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Color */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -145,7 +142,6 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Tipografía */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Tipografía</CardTitle>
@@ -174,7 +170,6 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Tema */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Tema visual</CardTitle>
@@ -202,7 +197,6 @@ export function BrandEditor() {
 
       <Separator />
 
-      {/* Vista previa */}
       <div
         className="rounded-2xl border p-6"
         style={{ borderColor: `${brand.primaryColor}40`, backgroundColor: `${brand.primaryColor}08` }}
