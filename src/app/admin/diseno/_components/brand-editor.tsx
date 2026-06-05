@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [
   { name: "Índigo", value: "#6366f1" },
@@ -37,15 +38,17 @@ interface BrandState {
   footerText: string;
 }
 
+const INITIAL_BRAND: BrandState = {
+  storeName: "",
+  tagline: "",
+  primaryColor: "#6366f1",
+  font: "Inter",
+  theme: "light",
+  footerText: "",
+};
+
 export function BrandEditor() {
-  const [brand, setBrand] = useState<BrandState>({
-    storeName: "",
-    tagline: "",
-    primaryColor: "#6366f1",
-    font: "Inter",
-    theme: "light",
-    footerText: "",
-  });
+  const [brand, setBrand] = useState<BrandState>(INITIAL_BRAND);
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
@@ -53,9 +56,11 @@ export function BrandEditor() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const handleReset = () => setBrand(INITIAL_BRAND);
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Store identity */}
+      {/* Identidad */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -94,7 +99,7 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Color palette */}
+      {/* Color */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -107,6 +112,7 @@ export function BrandEditor() {
             {PRESET_COLORS.map(({ name, value }) => (
               <button
                 key={value}
+                type="button"
                 title={name}
                 onClick={() => setBrand((b) => ({ ...b, primaryColor: value }))}
                 className="group relative h-9 w-9 rounded-full border-2 transition-transform hover:scale-110"
@@ -139,7 +145,7 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Typography */}
+      {/* Tipografía */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Tipografía</CardTitle>
@@ -149,12 +155,14 @@ export function BrandEditor() {
             {FONT_OPTIONS.map((font) => (
               <button
                 key={font}
+                type="button"
                 onClick={() => setBrand((b) => ({ ...b, font }))}
-                className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
+                className={cn(
+                  "rounded-lg border px-4 py-2 text-sm transition-colors",
                   brand.font === font
                     ? "border-primary bg-primary/10 font-medium text-primary"
-                    : "bg-muted/30 hover:border-primary/50"
-                }`}
+                    : "bg-muted/30 hover:border-primary/50",
+                )}
               >
                 {font}
               </button>
@@ -166,7 +174,7 @@ export function BrandEditor() {
         </CardContent>
       </Card>
 
-      {/* Theme */}
+      {/* Tema */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Tema visual</CardTitle>
@@ -176,12 +184,14 @@ export function BrandEditor() {
             {THEME_OPTIONS.map(({ id, label }) => (
               <button
                 key={id}
+                type="button"
                 onClick={() => setBrand((b) => ({ ...b, theme: id }))}
-                className={`flex-1 rounded-xl border py-3 text-sm font-medium transition-colors ${
+                className={cn(
+                  "flex-1 rounded-xl border py-3 text-sm font-medium transition-colors",
                   brand.theme === id
                     ? "border-primary bg-primary/10 text-primary"
-                    : "bg-muted/30 hover:border-primary/50"
-                }`}
+                    : "bg-muted/30 hover:border-primary/50",
+                )}
               >
                 {label}
               </button>
@@ -192,10 +202,10 @@ export function BrandEditor() {
 
       <Separator />
 
-      {/* Preview */}
+      {/* Vista previa */}
       <div
         className="rounded-2xl border p-6"
-        style={{ borderColor: brand.primaryColor + "40", backgroundColor: brand.primaryColor + "08" }}
+        style={{ borderColor: `${brand.primaryColor}40`, backgroundColor: `${brand.primaryColor}08` }}
       >
         <p className="mb-1 text-muted-foreground text-xs uppercase tracking-wider">Vista previa</p>
         <h2 className="font-bold text-2xl" style={{ color: brand.primaryColor }}>
@@ -208,7 +218,7 @@ export function BrandEditor() {
       </div>
 
       <div className="flex justify-end gap-3">
-        <Button variant="outline" className="gap-2" onClick={() => setBrand({ storeName: "", tagline: "", primaryColor: "#6366f1", font: "Inter", theme: "light", footerText: "" })}>
+        <Button variant="outline" className="gap-2" onClick={handleReset}>
           <RefreshCw className="h-4 w-4" />
           Restablecer
         </Button>
