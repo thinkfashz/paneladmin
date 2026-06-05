@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BarChart3, Calculator, ChevronLeft, Users } from "lucide-react";
+import { BarChart3, Calculator, ChevronLeft, Paintbrush, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,7 @@ const adminNav = [
   { href: "/admin/crm", label: "CRM & Agenda", icon: BarChart3 },
   { href: "/admin/customers", label: "Clientes", icon: Users },
   { href: "/admin/contabilidad", label: "Contabilidad / F29", icon: Calculator },
+  { href: "/admin/diseno", label: "Diseño", icon: Paintbrush },
 ];
 
 export function AdminNav() {
