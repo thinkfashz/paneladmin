@@ -6,10 +6,10 @@ import {
   BarChart3,
   Calculator,
   FileText,
+  LayoutDashboard,
   Package,
   Paintbrush,
   Settings,
-  Store,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -65,11 +65,11 @@ export function AdminNav() {
         </nav>
         <Separator orientation="vertical" className="h-5" />
         <Link
-          href="/"
+          href="/dashboard/default"
           className="flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          <Store className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Tienda</span>
+          <LayoutDashboard className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Dashboard</span>
         </Link>
       </div>
     </header>
