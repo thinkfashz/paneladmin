@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import * as tokenModule from "../token";
 import {
   type DemoAccessInput,
@@ -6,9 +8,9 @@ import {
   validateDemoAccessRecord,
 } from "../validate-demo-access";
 
-jest.mock("../token", () => ({
-  hashToken: jest.fn(),
-  isExpired: jest.fn(),
+vi.mock("../token", () => ({
+  hashToken: vi.fn(),
+  isExpired: vi.fn(),
 }));
 
 describe("validateDemoAccessInput", () => {
@@ -77,7 +79,7 @@ describe("validateDemoAccessRecord", () => {
   let validRecord: DemoAccessRecord;
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     validRecord = {
       businessId: "biz-123",
       businessSlug: "my-business",
@@ -88,8 +90,8 @@ describe("validateDemoAccessRecord", () => {
       visitCount: 0,
       maxVisits: 10,
     };
-    (tokenModule.hashToken as jest.Mock).mockResolvedValue("hashed-secret");
-    (tokenModule.isExpired as jest.Mock).mockReturnValue(false);
+    (tokenModule.hashToken as ReturnType<typeof vi.fn>).mockResolvedValue("hashed-secret");
+    (tokenModule.isExpired as ReturnType<typeof vi.fn>).mockReturnValue(false);
   });
 
   it("should fail early on missing input", async () => {
@@ -112,7 +114,7 @@ describe("validateDemoAccessRecord", () => {
   });
 
   it("should return invalid_token when token hash does not match", async () => {
-    (tokenModule.hashToken as jest.Mock).mockResolvedValue("different-hash");
+    (tokenModule.hashToken as ReturnType<typeof vi.fn>).mockResolvedValue("different-hash");
     const result = await validateDemoAccessRecord(validInput, validRecord);
     expect(result).toEqual({
       allowed: false,
@@ -142,7 +144,7 @@ describe("validateDemoAccessRecord", () => {
   });
 
   it("should return token_expired when token is expired", async () => {
-    (tokenModule.isExpired as jest.Mock).mockReturnValue(true);
+    (tokenModule.isExpired as ReturnType<typeof vi.fn>).mockReturnValue(true);
     const result = await validateDemoAccessRecord(validInput, validRecord);
     expect(result).toEqual({
       allowed: false,

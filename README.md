@@ -81,6 +81,23 @@ Shared UI, hooks, and configuration live at the top level, making the codebase m
 
 For a full breakdown of the structure with examples, see the [Next Colocation Template](https://github.com/arhamkhnz/next-colocation-template).
 
+## Primer inicio (Setup Wizard)
+
+La primera vez que la app arranca sin base de datos configurada, todas las rutas del panel redirigen a `/setup`, un asistente que corre **una sola vez**:
+
+1. **Conexión** — ingresas la URL de tu proyecto Supabase, la anon key y la service role key, y pruebas la conexión.
+2. **Migración** — copias el SQL inicial al SQL Editor de Supabase y el asistente verifica que las tablas existan.
+3. **Tu cuenta** — creas tu usuario superadmin (la contraseña se guarda hasheada con bcrypt en tu propia base de datos).
+4. **Candado** — al finalizar, el asistente queda bloqueado y muestra (una sola vez) el bloque de variables de entorno para que lo guardes en tus secretos (Vercel, `.env.local`, etc.).
+
+Cómo se guardan las credenciales:
+
+- Se cifran con **AES-256-GCM** en `.fabrick/config.enc` (carpeta ignorada por git, permisos 600).
+- Las **variables de entorno siempre tienen prioridad** sobre lo guardado por el asistente. En hosting serverless (Vercel) el filesystem es efímero, así que ahí debes usar las variables de entorno que el asistente te entrega al final.
+- Si defines `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `ACCESS_LOG_SECRET` en el entorno, el asistente se considera completado y no aparece.
+- Para reabrir el asistente: `FABRICK_SETUP_FORCE=true`.
+- `DEV_SUPERADMIN_MODE=true` (login `dev@fabrick.local`) solo funciona en desarrollo; queda deshabilitado de forma permanente con `NODE_ENV=production`.
+
 ## Getting Started
 
 You can run this project locally, or deploy it instantly with Vercel.

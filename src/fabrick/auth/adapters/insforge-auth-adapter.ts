@@ -1,4 +1,7 @@
+import { getSessionSecret } from "@/fabrick/setup/config-store";
+
 import { AUTH_ROLES } from "../roles";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "../token";
 import type { AuthLookupResult, AuthRequestContext } from "../types";
 
 export async function getInsforgeCurrentUser(context: AuthRequestContext = {}): Promise<AuthLookupResult> {
@@ -10,8 +13,7 @@ export async function getInsforgeCurrentUser(context: AuthRequestContext = {}): 
     };
   }
 
-  // Si existe sesion por cookie dev
-  const sessionCookie = context.cookies?.fabrick_session;
+  const sessionCookie = context.cookies?.[SESSION_COOKIE_NAME];
 
   if (!sessionCookie) {
     return {
@@ -25,51 +27,41 @@ export async function getInsforgeCurrentUser(context: AuthRequestContext = {}): 
     return createDevInsforgeSuperadmin();
   }
 
-  // Decodificación de sesión con validación de firma
-  try {
-    const parts = sessionCookie.split(".");
-    if (parts.length !== 2) {
-      throw new Error("Invalid token format");
-    }
-
-    const [base64Payload, incomingSignature] = parts;
-
-    const { hmacSha256 } = await import("@/fabrick/security/hash");
-    const secret = process.env.ACCESS_LOG_SECRET || "dev_secret";
-
-    // Verificamos que la firma del token no haya sido manipulada
-    const expectedSignature = await hmacSha256(base64Payload, secret);
-
-    if (incomingSignature !== expectedSignature) {
-      throw new Error("Invalid token signature");
-    }
-
-    const payloadStr = atob(base64Payload);
-    const payload = JSON.parse(payloadStr);
-
-    return {
-      ok: true,
-      user: {
-        id: payload.id,
-        email: payload.email,
-        fullName: payload.fullName || "User",
-        role: payload.role,
-        businessId: payload.businessId || null,
-        provider: "insforge",
-      },
-      message: "Sesión validada correctamente.",
-    };
-  } catch (_err) {
+  const secret = getSessionSecret();
+  if (!secret) {
     return {
       ok: false,
       user: null,
-      message: "Error al validar la firma de sesión.",
+      message: "Secreto de sesión no configurado.",
     };
   }
+
+  const payload = await verifySessionToken(sessionCookie, secret);
+  if (!payload) {
+    return {
+      ok: false,
+      user: null,
+      message: "Sesión inválida o expirada.",
+    };
+  }
+
+  return {
+    ok: true,
+    user: {
+      id: payload.id,
+      email: payload.email,
+      fullName: payload.fullName || "User",
+      role: payload.role,
+      businessId: payload.businessId ?? null,
+      provider: "insforge",
+    },
+    message: "Sesión validada correctamente.",
+  };
 }
 
 export function createDevInsforgeSuperadmin(): AuthLookupResult {
-  if (process.env.DEV_SUPERADMIN_MODE !== "true") {
+  // El bypass de desarrollo queda deshabilitado de forma permanente en produccion.
+  if (process.env.NODE_ENV === "production" || process.env.DEV_SUPERADMIN_MODE !== "true") {
     return {
       ok: false,
       user: null,

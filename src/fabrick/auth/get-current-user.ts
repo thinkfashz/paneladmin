@@ -30,11 +30,11 @@ export async function getCurrentUser(context: AuthRequestContext = {}): Promise<
   }
 
   if (provider === "supabase") {
-    return getSupabaseCurrentUser(context);
+    return getSupabaseCurrentUser(enrichedContext);
   }
 
   if (provider === "pocketbase") {
-    return getPocketBaseCurrentUser(context);
+    return getPocketBaseCurrentUser(enrichedContext);
   }
 
   return {

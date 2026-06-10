@@ -1,8 +1,10 @@
+import { getSupabaseRuntimeConfig } from "@/fabrick/setup/config-store";
+
 export type ActivityProviderId = "insforge" | "supabase" | "pocketbase" | "console";
 
 export function getActivityProvider(): ActivityProviderId {
   if (process.env.INSFORGE_BASE_URL && process.env.INSFORGE_PROJECT_ID) return "insforge";
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) return "supabase";
+  if (getSupabaseRuntimeConfig()) return "supabase";
   if (process.env.POCKETBASE_URL) return "pocketbase";
   return "console";
 }
