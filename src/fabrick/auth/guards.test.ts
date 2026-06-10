@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
 import { requirePermission } from "./guards";
 import { AUTH_PERMISSIONS } from "./permissions";
 import { AUTH_ROLES } from "./roles";

@@ -2,8 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { writeActivityRecord } from "@/fabrick/activity/write-activity-record";
+import { canRunSetup, isSetupComplete } from "@/fabrick/setup/config-store";
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   // Aplicar headers de seguridad básicos
   const response = NextResponse.next();
   response.headers.set("X-Frame-Options", "DENY");
@@ -19,6 +20,30 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  const pathname = request.nextUrl.pathname;
+
+  // Primer inicio: si la app aún no está configurada, todo el panel
+  // redirige al asistente. Una vez completado, el asistente queda
+  // bloqueado (candado) y redirige al login.
+  const setupDone = isSetupComplete();
+
+  if (pathname.startsWith("/setup")) {
+    if (!canRunSetup()) {
+      return NextResponse.redirect(new URL("/auth/v1/login", request.url));
+    }
+    return response;
+  }
+
+  if (
+    !setupDone &&
+    (pathname === "/" ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/superadmin"))
+  ) {
+    return NextResponse.redirect(new URL("/setup", request.url));
+  }
+
   // Registrar activity suavemente sin bloquear
   try {
     const ip = request.headers.get("x-forwarded-for") || null;
@@ -26,16 +51,10 @@ export async function middleware(request: NextRequest) {
     const referer = request.headers.get("referer") || null;
 
     // Solo logeamos accesos al panel, superadmin y login por ahora (fase uno)
-    if (
-      request.nextUrl.pathname.startsWith("/superadmin") ||
-      request.nextUrl.pathname.startsWith("/dashboard") ||
-      request.nextUrl.pathname.startsWith("/auth")
-    ) {
-      // In Next.js middleware (Edge) we should wait for promises or use executionCtx.waitUntil
-      // We will await the logging to ensure it safely resolves before edge workers terminate
+    if (pathname.startsWith("/superadmin") || pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
       await writeActivityRecord({
         eventType: "page_view",
-        path: request.nextUrl.pathname,
+        path: pathname,
         method: request.method,
         ip,
         userAgent,
@@ -43,19 +62,17 @@ export async function middleware(request: NextRequest) {
       });
     }
   } catch (err) {
-    console.error("Error al registrar actividad en middleware", err);
+    console.error("Error al registrar actividad en proxy", err);
   }
 
   // Phase two checks: Require Auth logic
-  const isSuperadminRoute = request.nextUrl.pathname.startsWith("/superadmin");
-  const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const isSuperadminRoute = pathname.startsWith("/superadmin");
+  const isDashboardRoute = pathname.startsWith("/dashboard");
 
   if (isSuperadminRoute || isDashboardRoute) {
-    // Extract cookies from the incoming request for Edge compatibility
     const allCookies = request.cookies.getAll();
     const cookieObj = Object.fromEntries(allCookies.map((c) => [c.name, c.value]));
 
-    // Import lazily to avoid Edge runtime module loading errors
     const { getCurrentUser } = await import("@/fabrick/auth/get-current-user");
     const authResult = await getCurrentUser({ cookies: cookieObj });
 

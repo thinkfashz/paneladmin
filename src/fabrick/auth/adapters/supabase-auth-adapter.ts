@@ -1,7 +1,10 @@
+import { getSessionSecret, getSupabaseRuntimeConfig } from "@/fabrick/setup/config-store";
+
+import { SESSION_COOKIE_NAME, verifySessionToken } from "../token";
 import type { AuthLookupResult, AuthRequestContext } from "../types";
 
-export async function getSupabaseCurrentUser(_context: AuthRequestContext = {}): Promise<AuthLookupResult> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+export async function getSupabaseCurrentUser(context: AuthRequestContext = {}): Promise<AuthLookupResult> {
+  if (!getSupabaseRuntimeConfig()) {
     return {
       ok: false,
       user: null,
@@ -9,11 +12,43 @@ export async function getSupabaseCurrentUser(_context: AuthRequestContext = {}):
     };
   }
 
-  // TODO: Conectar con @supabase/ssr y leer usuario real desde cookies del servidor.
-  // Luego consultar profiles para obtener role y business_id.
+  const sessionCookie = context.cookies?.[SESSION_COOKIE_NAME];
+  if (!sessionCookie) {
+    return {
+      ok: false,
+      user: null,
+      message: "No hay sesión activa.",
+    };
+  }
+
+  const secret = getSessionSecret();
+  if (!secret) {
+    return {
+      ok: false,
+      user: null,
+      message: "Secreto de sesión no configurado.",
+    };
+  }
+
+  const payload = await verifySessionToken(sessionCookie, secret);
+  if (!payload) {
+    return {
+      ok: false,
+      user: null,
+      message: "Sesión inválida o expirada.",
+    };
+  }
+
   return {
-    ok: false,
-    user: null,
-    message: "Supabase auth pendiente de conexion real con cookies server-side.",
+    ok: true,
+    user: {
+      id: payload.id,
+      email: payload.email,
+      fullName: payload.fullName || "User",
+      role: payload.role,
+      businessId: payload.businessId ?? null,
+      provider: "supabase",
+    },
+    message: "Sesión validada correctamente.",
   };
 }

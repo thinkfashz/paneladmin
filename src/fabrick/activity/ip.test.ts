@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { getActivityIpFromHeaders, maskActivityIp, hashActivityIp } from "./ip";
+import { describe, expect, it } from "vitest";
+
+import { getActivityIpFromHeaders, hashActivityIp, maskActivityIp } from "./ip";
 
 describe("getActivityIpFromHeaders", () => {
   it("extracts from x-forwarded-for with single IP", () => {

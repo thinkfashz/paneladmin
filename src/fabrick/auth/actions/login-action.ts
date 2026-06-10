@@ -3,26 +3,56 @@
 import { cookies } from "next/headers";
 
 import { writeActivityRecord } from "@/fabrick/activity/write-activity-record";
+import { supabaseRest } from "@/fabrick/integrations/supabase/rest";
+import { checkRateLimit, createRateLimitKey, RATE_LIMITS } from "@/fabrick/security/rate-limit";
+import { getSessionSecret } from "@/fabrick/setup/config-store";
 
 import { getAuthProvider } from "../provider";
+import type { AuthRole } from "../roles";
+import { createSessionToken, getSessionCookieOptions, SESSION_COOKIE_NAME } from "../token";
 
-export async function loginAction(email: string, _password: string) {
-  // En un entorno real, aquí se llamaría al SDK del proveedor de auth
-  // para verificar las credenciales y obtener un JWT/session.
+type ProfileRow = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: AuthRole;
+  business_id: string | null;
+  password_hash: string | null;
+  is_active?: boolean;
+};
 
+const GENERIC_FAILURE = {
+  ok: false,
+  message: "Credenciales invalidas o proveedor no configurado correctamente.",
+};
+
+export async function loginAction(email: string, password: string) {
   const provider = getAuthProvider();
+  const activityMetadata = { email_attempted: email, provider };
 
-  // Simulated validation for demonstration based on the requirement
-  // "Registrar intentos de login con writeActivityRecord()."
-  // "Conecta usuario real, rol real y 'business_id' real."
+  const rate = checkRateLimit({
+    key: createRateLimitKey(["login", email.toLowerCase()]),
+    ...RATE_LIMITS.LOGIN_ATTEMPT,
+  });
 
-  const activityMetadata = {
-    email_attempted: email,
-    provider,
-  };
+  if (!rate.allowed) {
+    await writeActivityRecord({
+      eventType: "login_rate_limited",
+      path: "/auth/v1/login",
+      method: "POST",
+      userEmail: email,
+      metadata: activityMetadata,
+    });
 
-  // Modo desarrollo / Superadmin
-  if (process.env.DEV_SUPERADMIN_MODE === "true" && email === "dev@fabrick.local") {
+    return { ok: false, message: "Demasiados intentos. Espera unos minutos y vuelve a intentar." };
+  }
+
+  // Modo desarrollo / Superadmin: bloqueado de forma permanente en produccion.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.DEV_SUPERADMIN_MODE === "true" &&
+    email === "dev@fabrick.local"
+  ) {
     await writeActivityRecord({
       eventType: "login_success",
       path: "/auth/v1/login",
@@ -32,30 +62,35 @@ export async function loginAction(email: string, _password: string) {
     });
 
     const cookieStore = await cookies();
-    cookieStore.set("fabrick_session", "dev-superadmin-token", { secure: process.env.NODE_ENV === "production" });
+    cookieStore.set(SESSION_COOKIE_NAME, "dev-superadmin-token", getSessionCookieOptions());
 
-    return {
-      ok: true,
-      message: "Inicio de sesión exitoso (Dev Superadmin).",
-    };
+    return { ok: true, message: "Inicio de sesión exitoso (Dev Superadmin)." };
   }
 
-  // Lógica de validación con Base de Datos
-  // Simularemos la llamada que se conectará con InsForge o el proveedor que tengas
-  let ok = false;
-  let sessionToken = "";
+  const secret = getSessionSecret();
+  if (!secret) {
+    console.error("[auth] ACCESS_LOG_SECRET no esta configurado; login deshabilitado.");
+    return GENERIC_FAILURE;
+  }
 
-  if (provider === "insforge") {
+  let profile: ProfileRow | null = null;
+
+  if (provider === "supabase") {
+    const result = await supabaseRest<ProfileRow[]>(
+      `profiles?select=id,email,full_name,role,business_id,password_hash,is_active&email=eq.${encodeURIComponent(email)}&limit=1`,
+    );
+
+    if (result.ok && result.data && result.data.length > 0) {
+      profile = result.data[0];
+    }
+  } else if (provider === "insforge") {
     const { getInsforgeConfig } = await import("@/fabrick/integrations/insforge/client");
     const config = getInsforgeConfig();
 
     if (config.baseUrl && config.anonKey) {
       try {
-        // En una app real de Supabase/Insforge esto sería auth.signInWithPassword()
-        // Aquí para este sistema custom, se asume que buscamos el perfil si no tenemos modulo auth
-        // O usamos un wrapper. Para la etapa en la que estamos hacemos un mock que devuelve sesión si el mail existe.
         const url = new URL(
-          `/rest/v1/profiles?select=id,role,business_id&email=eq.${encodeURIComponent(email)}`,
+          `/rest/v1/profiles?select=id,email,full_name,role,business_id,password_hash,is_active&email=eq.${encodeURIComponent(email)}`,
           config.baseUrl,
         );
         const res = await fetch(url.toString(), {
@@ -67,44 +102,37 @@ export async function loginAction(email: string, _password: string) {
 
         if (res.ok) {
           const profiles = await res.json();
-          if (profiles && profiles.length > 0) {
-            // Check password correctly utilizing the stored password_hash using bcrypt.
-            // Assuming the actual profile payload contains "password_hash" as usually expected.
-            const profile = profiles[0];
-            const { compare } = await import("bcryptjs");
-
-            // To prevent crashing with missing fields when creating manual demos,
-            // fallback gracefully ensuring only authenticated ones match.
-            const isValidPassword = profile.password_hash ? await compare(_password, profile.password_hash) : false;
-
-            if (isValidPassword) {
-              ok = true;
-
-              // Simulamos la creación de un JWT firmado usando nuestra utilidad HMAC
-              const { hmacSha256 } = await import("@/fabrick/security/hash");
-              const secret = process.env.ACCESS_LOG_SECRET || "dev_secret";
-
-              const payloadData = JSON.stringify({
-                id: profile.id,
-                role: profile.role,
-                businessId: profile.business_id,
-                email: email,
-              });
-
-              const base64Payload = btoa(payloadData);
-              const signature = await hmacSha256(base64Payload, secret);
-
-              sessionToken = `${base64Payload}.${signature}`;
-            }
+          if (Array.isArray(profiles) && profiles.length > 0) {
+            profile = profiles[0];
           }
         }
       } catch (err) {
-        console.error("Login call failed", err);
+        console.error("[auth] Fallo la consulta de perfil en InsForge.", err instanceof Error ? err.message : err);
       }
     }
   }
 
-  if (!ok) {
+  let sessionToken = "";
+
+  if (profile && profile.password_hash && profile.is_active !== false) {
+    const { compare } = await import("bcryptjs");
+    const isValidPassword = await compare(password, profile.password_hash);
+
+    if (isValidPassword) {
+      sessionToken = await createSessionToken(
+        {
+          id: profile.id,
+          email: profile.email ?? email,
+          fullName: profile.full_name,
+          role: profile.role,
+          businessId: profile.business_id,
+        },
+        secret,
+      );
+    }
+  }
+
+  if (!sessionToken) {
     await writeActivityRecord({
       eventType: "login_failed",
       path: "/auth/v1/login",
@@ -113,10 +141,7 @@ export async function loginAction(email: string, _password: string) {
       metadata: activityMetadata,
     });
 
-    return {
-      ok: false,
-      message: "Credenciales inválidas o proveedor no configurado correctamente.",
-    };
+    return GENERIC_FAILURE;
   }
 
   await writeActivityRecord({
@@ -128,10 +153,7 @@ export async function loginAction(email: string, _password: string) {
   });
 
   const cookieStore = await cookies();
-  cookieStore.set("fabrick_session", sessionToken, { secure: process.env.NODE_ENV === "production", path: "/" });
+  cookieStore.set(SESSION_COOKIE_NAME, sessionToken, getSessionCookieOptions());
 
-  return {
-    ok: true,
-    message: "Inicio de sesión exitoso.",
-  };
+  return { ok: true, message: "Inicio de sesión exitoso." };
 }

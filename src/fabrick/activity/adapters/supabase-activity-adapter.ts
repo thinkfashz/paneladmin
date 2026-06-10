@@ -1,8 +1,11 @@
+import { getSupabaseRuntimeConfig } from "@/fabrick/setup/config-store";
+
 import type { ActivityRecord, ActivityWriteResult } from "../types";
 
 export async function writeActivityToSupabase(record: ActivityRecord): Promise<ActivityWriteResult> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const config = getSupabaseRuntimeConfig();
+  const url = config?.url;
+  const serviceKey = config?.serviceRoleKey;
 
   if (!url || !serviceKey) {
     return {

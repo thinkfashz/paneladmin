@@ -29,6 +29,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# fabrick runtime config (credenciales cifradas del asistente de setup)
+/.fabrick/
+
 # vercel
 .vercel
 
