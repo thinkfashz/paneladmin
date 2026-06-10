@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { getDatabaseConnectionHealth } from "@/fabrick/database/connection-health";
 import {
   databaseCapabilities,
@@ -41,6 +43,9 @@ export default async function DatabaseSystemPage() {
             Panel de diagnostico para revisar InsForge, Supabase y PocketBase antes de construir los modulos de auth,
             seguridad, demos 72h, store, CRM y agenda.
           </p>
+          <Link className="font-medium text-sm underline underline-offset-4" href="/superadmin/system/env">
+            Ver lista de variables y claves del panel →
+          </Link>
         </div>
       </section>
 
