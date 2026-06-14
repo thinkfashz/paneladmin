@@ -83,3 +83,17 @@ El módulo `app-shell` arropa:
 - Estado global
 
 No debe contener lógica específica de negocio.
+
+## Corrección de rutas duplicadas
+
+Se eliminaron wrappers en `src/app/dashboard/*` porque las rutas reales ya viven dentro de `src/app/(main)/dashboard/*`.
+
+En Next.js, los route groups como `(main)` no forman parte de la URL, por eso:
+
+- `src/app/dashboard/default/page.tsx`
+- `src/app/(main)/dashboard/default/page.tsx`
+
+ambos resuelven a `/dashboard/default` y causan error de build.
+
+Regla:
+No crear wrappers duplicados fuera del route group cuando ya exista la ruta dentro de `(main)`.
