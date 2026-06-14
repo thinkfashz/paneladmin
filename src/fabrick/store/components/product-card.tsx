@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -5,9 +7,10 @@ import type { Product } from "../types";
 
 type ProductCardProps = {
   product: Product;
+  checkoutUrl?: string;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, checkoutUrl }: ProductCardProps) {
   return (
     <Card className="flex flex-col justify-between overflow-hidden">
       {product.image_url ? (
@@ -28,10 +31,15 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="line-clamp-2 text-muted-foreground text-sm">
           {product.description ?? "Sin descripción disponible."}
         </p>
-        <p className="mt-4 font-bold text-2xl text-foreground">${Number(product.price).toFixed(2)}</p>
+        <p className="mt-4 font-bold text-2xl text-foreground">${Number(product.price).toFixed(0)}</p>
       </CardContent>
-      <CardFooter>
-        <Button className="w-full">Agregar al Carrito</Button>
+      <CardFooter className="flex gap-2">
+        <Button className="flex-1">Agregar al Carrito</Button>
+        {checkoutUrl && (
+          <Button asChild variant="outline" className="shrink-0">
+            <Link href={checkoutUrl}>Comprar</Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

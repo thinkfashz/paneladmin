@@ -40,7 +40,11 @@ export default async function StoreFrontPage({ params }: StoreFrontPageProps) {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                checkoutUrl={`/${params.businessSlug}/checkout?total=${Number(product.price).toFixed(0)}`}
+              />
             ))}
           </div>
         )}
