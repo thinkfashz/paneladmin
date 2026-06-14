@@ -32,9 +32,15 @@ yarn-error.log*
 # fabrick runtime config (credenciales cifradas del asistente de setup)
 /.fabrick/
 
+# MCP local config (contiene API keys; nunca subir)
+.mcp.json
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude local settings
+.claude/settings.local.json
