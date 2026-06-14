@@ -124,12 +124,21 @@ export function hasSetupLock(): boolean {
 // Si el usuario ya configuro todo via variables de entorno (sus "secretos"),
 // el asistente no es necesario: se considera la app como configurada.
 export function hasFullEnvConfig(): boolean {
-  return Boolean(
+  const hasSupabaseEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
       process.env.SUPABASE_SERVICE_ROLE_KEY &&
       process.env.ACCESS_LOG_SECRET,
   );
+
+  const hasInsForgeEnv = Boolean(
+    (process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.INSFORGE_API_URL || process.env.INSFORGE_BASE_URL) &&
+      (process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || process.env.INSFORGE_ANON_KEY) &&
+      (process.env.INSFORGE_SERVICE_ROLE_KEY || process.env.INSFORGE_API_KEY) &&
+      process.env.ACCESS_LOG_SECRET,
+  );
+
+  return hasSupabaseEnv || hasInsForgeEnv;
 }
 
 export function isSetupComplete(): boolean {
@@ -139,7 +148,13 @@ export function isSetupComplete(): boolean {
 // Candado: el asistente solo corre si nunca se completo, o si el dueno
 // lo fuerza explicitamente con FABRICK_SETUP_FORCE=true en su entorno.
 export function canRunSetup(): boolean {
-  if (process.env.FABRICK_SETUP_FORCE === "true") return true;
+  // En Vercel, las variables de entorno deben tener prioridad.
+  // Si Supabase o InsForge están completos, no mostramos setup aunque haya quedado FABRICK_SETUP_FORCE=true.
+  if (hasFullEnvConfig()) return false;
+
+  // Para forzar setup manualmente desde ahora usar FABRICK_SETUP_FORCE=reset.
+  if (process.env.FABRICK_SETUP_FORCE === "reset") return true;
+
   return !isSetupComplete();
 }
 

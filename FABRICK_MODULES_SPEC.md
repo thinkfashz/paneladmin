@@ -97,3 +97,17 @@ ambos resuelven a `/dashboard/default` y causan error de build.
 
 Regla:
 No crear wrappers duplicados fuera del route group cuando ya exista la ruta dentro de `(main)`.
+
+## Corrección setup InsForge
+
+Se corrigió `src/fabrick/setup/config-store.ts` para que el setup se considere completo cuando existan variables de entorno de InsForge:
+
+- `NEXT_PUBLIC_INSFORGE_URL` o `INSFORGE_API_URL` o `INSFORGE_BASE_URL`
+- `NEXT_PUBLIC_INSFORGE_ANON_KEY` o `INSFORGE_ANON_KEY`
+- `INSFORGE_SERVICE_ROLE_KEY` o `INSFORGE_API_KEY`
+- `ACCESS_LOG_SECRET`
+
+También se cambió la regla de fuerza:
+- Antes: `FABRICK_SETUP_FORCE=true` mostraba setup siempre.
+- Ahora: si hay env completo, no muestra setup.
+- Para forzar manualmente se usa `FABRICK_SETUP_FORCE=reset`.
