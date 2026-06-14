@@ -26,6 +26,102 @@ const GENERIC_FAILURE = {
   message: "Credenciales invalidas o proveedor no configurado correctamente.",
 };
 
+function normalizeUrl(value: string) {
+  return value.trim().replace(/\/+$/, "");
+}
+
+function getInsForgeLoginConfig() {
+  return {
+    url: process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.INSFORGE_API_URL || process.env.INSFORGE_BASE_URL,
+    apiKey: process.env.INSFORGE_SERVICE_ROLE_KEY || process.env.INSFORGE_API_KEY,
+  };
+}
+
+function sqlString(value: string) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function extractRows(data: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(data)) return data as Array<Record<string, unknown>>;
+
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+
+    if (Array.isArray(obj.data)) return obj.data as Array<Record<string, unknown>>;
+    if (Array.isArray(obj.rows)) return obj.rows as Array<Record<string, unknown>>;
+
+    if (obj.result && typeof obj.result === "object") {
+      const result = obj.result as Record<string, unknown>;
+      if (Array.isArray(result.rows)) return result.rows as Array<Record<string, unknown>>;
+      if (Array.isArray(result.data)) return result.data as Array<Record<string, unknown>>;
+    }
+  }
+
+  return [];
+}
+
+async function findInsForgeProfile(email: string): Promise<ProfileRow | null> {
+  const config = getInsForgeLoginConfig();
+
+  if (!config.url || !config.apiKey) {
+    console.error("[auth] InsForge no esta configurado para login. Faltan URL o API key.");
+    return null;
+  }
+
+  const query = `
+    select id, email, full_name, role, business_id, password_hash, is_active
+    from public.profiles
+    where email = ${sqlString(email)}
+    limit 1
+  `;
+
+  try {
+    const response = await fetch(`${normalizeUrl(config.url)}/api/database/advance/rawsql/unrestricted`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": config.apiKey,
+      },
+      body: JSON.stringify({ query }),
+      cache: "no-store",
+    });
+
+    const text = await response.text();
+    let data: unknown = null;
+
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
+
+    if (!response.ok) {
+      console.error("[auth] InsForge respondio con error al buscar perfil.", response.status, data);
+      return null;
+    }
+
+    const rows = extractRows(data);
+    const row = rows[0];
+
+    if (!row) return null;
+
+    return {
+      id: String(row.id ?? ""),
+      email: String(row.email ?? email),
+      full_name: row.full_name ? String(row.full_name) : null,
+      role: String(row.role ?? "admin") as AuthRole,
+      business_id: row.business_id ? String(row.business_id) : null,
+      password_hash: row.password_hash ? String(row.password_hash) : null,
+      is_active: row.is_active === false ? false : true,
+    };
+  } catch (err) {
+    console.error("[auth] Fallo la consulta de perfil en InsForge.", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 export async function loginAction(email: string, password: string) {
   const provider = getAuthProvider();
   const activityMetadata = { email_attempted: email, provider };
@@ -84,32 +180,7 @@ export async function loginAction(email: string, password: string) {
       profile = result.data[0];
     }
   } else if (provider === "insforge") {
-    const { getInsforgeConfig } = await import("@/fabrick/integrations/insforge/client");
-    const config = getInsforgeConfig();
-
-    if (config.baseUrl && config.anonKey) {
-      try {
-        const url = new URL(
-          `/rest/v1/profiles?select=id,email,full_name,role,business_id,password_hash,is_active&email=eq.${encodeURIComponent(email)}`,
-          config.baseUrl,
-        );
-        const res = await fetch(url.toString(), {
-          headers: {
-            Authorization: `Bearer ${config.anonKey}`,
-            "x-project-id": config.projectId as string,
-          },
-        });
-
-        if (res.ok) {
-          const profiles = await res.json();
-          if (Array.isArray(profiles) && profiles.length > 0) {
-            profile = profiles[0];
-          }
-        }
-      } catch (err) {
-        console.error("[auth] Fallo la consulta de perfil en InsForge.", err instanceof Error ? err.message : err);
-      }
-    }
+    profile = await findInsForgeProfile(email);
   }
 
   let sessionToken = "";

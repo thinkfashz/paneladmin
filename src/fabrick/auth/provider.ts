@@ -3,7 +3,21 @@ import { getSupabaseRuntimeConfig } from "@/fabrick/setup/config-store";
 export type AuthProviderId = "insforge" | "supabase" | "pocketbase" | "none";
 
 export function getAuthProvider(): AuthProviderId {
-  if (process.env.INSFORGE_BASE_URL && process.env.INSFORGE_PROJECT_ID) return "insforge";
+  const hasInsForgeUrl = Boolean(
+    process.env.NEXT_PUBLIC_INSFORGE_URL ||
+      process.env.INSFORGE_API_URL ||
+      process.env.INSFORGE_BASE_URL,
+  );
+
+  const hasInsForgeServerKey = Boolean(
+    process.env.INSFORGE_SERVICE_ROLE_KEY ||
+      process.env.INSFORGE_API_KEY,
+  );
+
+  if (process.env.DATABASE_PROVIDER === "insforge" || (hasInsForgeUrl && hasInsForgeServerKey)) {
+    return "insforge";
+  }
+
   // Supabase puede venir de variables de entorno o de la configuracion
   // guardada por el asistente de primer inicio.
   if (getSupabaseRuntimeConfig()) return "supabase";
