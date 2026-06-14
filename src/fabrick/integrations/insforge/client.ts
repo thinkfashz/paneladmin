@@ -1,3 +1,5 @@
+import { getInsforgeRuntimeConfig } from "@/fabrick/setup/config-store";
+
 export type InsforgeHealthResult = {
   ok: boolean;
   configured: boolean;
@@ -7,16 +9,20 @@ export type InsforgeHealthResult = {
 };
 
 export function getInsforgeConfig() {
+  const runtime = getInsforgeRuntimeConfig();
+
   return {
-    baseUrl: process.env.INSFORGE_BASE_URL,
-    anonKey: process.env.INSFORGE_ANON_KEY,
+    baseUrl: runtime?.baseUrl,
+    apiKey: runtime?.apiKey,
+    // Compatibilidad temporal con adaptadores antiguos.
+    anonKey: runtime?.apiKey,
     projectId: process.env.INSFORGE_PROJECT_ID,
   };
 }
 
 export function isInsforgeConfigured() {
   const config = getInsforgeConfig();
-  return Boolean(config.baseUrl && config.anonKey && config.projectId);
+  return Boolean(config.baseUrl && config.apiKey);
 }
 
 export async function testInsforgeConnection(): Promise<InsforgeHealthResult> {
@@ -28,17 +34,16 @@ export async function testInsforgeConnection(): Promise<InsforgeHealthResult> {
       ok: false,
       configured: false,
       provider: "insforge",
-      message: "InsForge no esta configurado. Revisa INSFORGE_BASE_URL, INSFORGE_ANON_KEY e INSFORGE_PROJECT_ID.",
+      message: "InsForge no esta configurado. Revisa INSFORGE_BASE_URL e INSFORGE_API_KEY.",
       checkedAt,
     };
   }
 
   try {
-    const response = await fetch(config.baseUrl as string, {
+    const response = await fetch(`${config.baseUrl}/api/database/functions`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${config.anonKey}`,
-        "x-project-id": config.projectId as string,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       cache: "no-store",
     });
@@ -49,7 +54,7 @@ export async function testInsforgeConnection(): Promise<InsforgeHealthResult> {
       provider: "insforge",
       message: response.ok
         ? "InsForge responde correctamente."
-        : `InsForge respondio con estado ${response.status}. Revisa URL, anon key y project id.`,
+        : `InsForge respondio con estado ${response.status}. Revisa URL y API key.`,
       checkedAt,
     };
   } catch (error) {

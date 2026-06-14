@@ -1,11 +1,11 @@
-import { getSessionSecret } from "@/fabrick/setup/config-store";
+import { getInsforgeRuntimeConfig, getSessionSecret } from "@/fabrick/setup/config-store";
 
 import { AUTH_ROLES } from "../roles";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "../token";
 import type { AuthLookupResult, AuthRequestContext } from "../types";
 
 export async function getInsforgeCurrentUser(context: AuthRequestContext = {}): Promise<AuthLookupResult> {
-  if (!process.env.INSFORGE_BASE_URL || !process.env.INSFORGE_PROJECT_ID) {
+  if (!getInsforgeRuntimeConfig()) {
     return {
       ok: false,
       user: null,

@@ -8,10 +8,12 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "n
 import path from "node:path";
 
 export type RuntimeConfig = {
-  provider: "supabase";
-  supabaseUrl: string;
-  supabaseAnonKey: string;
-  supabaseServiceRoleKey: string;
+  provider: "supabase" | "insforge";
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  supabaseServiceRoleKey?: string;
+  insforgeBaseUrl?: string;
+  insforgeApiKey?: string;
   accessLogSecret: string;
   adminEmail: string;
   configuredAt: string;
@@ -124,12 +126,15 @@ export function hasSetupLock(): boolean {
 // Si el usuario ya configuro todo via variables de entorno (sus "secretos"),
 // el asistente no es necesario: se considera la app como configurada.
 export function hasFullEnvConfig(): boolean {
-  return Boolean(
+  const hasSupabase = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
       process.env.SUPABASE_SERVICE_ROLE_KEY &&
       process.env.ACCESS_LOG_SECRET,
   );
+  const hasInsforge = Boolean(process.env.INSFORGE_BASE_URL && getInsforgeEnvApiKey() && process.env.ACCESS_LOG_SECRET);
+
+  return hasSupabase || hasInsforge;
 }
 
 export function isSetupComplete(): boolean {
@@ -158,6 +163,25 @@ export function getSupabaseRuntimeConfig(): SupabaseRuntimeConfig | null {
 
   if (!url || !anonKey || !serviceRoleKey) return null;
   return { url, anonKey, serviceRoleKey };
+}
+
+export type InsforgeRuntimeConfig = {
+  baseUrl: string;
+  apiKey: string;
+};
+
+function getInsforgeEnvApiKey(): string | undefined {
+  return process.env.INSFORGE_API_KEY || process.env.INSFORGE_ANON_KEY;
+}
+
+export function getInsforgeRuntimeConfig(): InsforgeRuntimeConfig | null {
+  const stored = loadRuntimeConfig();
+
+  const baseUrl = process.env.INSFORGE_BASE_URL || stored?.insforgeBaseUrl;
+  const apiKey = getInsforgeEnvApiKey() ?? stored?.insforgeApiKey;
+
+  if (!baseUrl || !apiKey) return null;
+  return { baseUrl, apiKey };
 }
 
 // Secreto para firmar sesiones. En produccion NUNCA cae a un valor debil:

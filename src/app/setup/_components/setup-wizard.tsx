@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CheckCircle2, Copy, Database, KeyRound, Lock, ShieldCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { completeSetupAction, testConnectionAction, verifyMigrationAction } from "@/fabrick/setup/actions";
+import {
+  applyMigrationAction,
+  completeSetupAction,
+  getSetupEnvStatusAction,
+  testConnectionAction,
+  verifyMigrationAction,
+} from "@/fabrick/setup/actions";
+
+type DatabaseProvider = "supabase" | "insforge";
+
+type EnvStatus = {
+  provider: DatabaseProvider;
+  label: string;
+  detected: boolean;
+  variables: { name: string; detected: boolean }[];
+};
 
 type SetupWizardProps = {
   migrationSql: string;
@@ -29,9 +44,14 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
 
+  const [provider, setProvider] = useState<DatabaseProvider>("supabase");
+  const [envStatuses, setEnvStatuses] = useState<EnvStatus[]>([]);
+
   const [supabaseUrl, setSupabaseUrl] = useState("");
   const [supabaseAnonKey, setSupabaseAnonKey] = useState("");
   const [supabaseServiceRoleKey, setSupabaseServiceRoleKey] = useState("");
+  const [insforgeBaseUrl, setInsforgeBaseUrl] = useState("");
+  const [insforgeApiKey, setInsforgeApiKey] = useState("");
   const [connectionOk, setConnectionOk] = useState(false);
   const [migrationOk, setMigrationOk] = useState(false);
   const [missingTables, setMissingTables] = useState<string[]>([]);
@@ -43,7 +63,31 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
 
   const [envBlock, setEnvBlock] = useState("");
 
-  const credentials = { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey };
+  const selectedEnvStatus = useMemo(
+    () => envStatuses.find((status) => status.provider === provider),
+    [envStatuses, provider],
+  );
+  const providerEnvDetected = Boolean(selectedEnvStatus?.detected);
+  const credentials = {
+    provider,
+    supabaseUrl,
+    supabaseAnonKey,
+    supabaseServiceRoleKey,
+    insforgeBaseUrl,
+    insforgeApiKey,
+  };
+  const manualCredentialsComplete =
+    provider === "supabase"
+      ? Boolean(supabaseUrl && supabaseAnonKey && supabaseServiceRoleKey)
+      : Boolean(insforgeBaseUrl && insforgeApiKey);
+  const canTestConnection = providerEnvDetected || manualCredentialsComplete;
+
+  useEffect(() => {
+    void getSetupEnvStatusAction().then((result) => {
+      if (result.envStatuses) setEnvStatuses(result.envStatuses);
+      if (result.envProvider) setProvider(result.envProvider);
+    });
+  }, []);
 
   const handleTestConnection = async () => {
     setBusy(true);
@@ -52,6 +96,21 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
       setConnectionOk(result.ok);
       if (result.ok) {
         toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleApplyMigration = async () => {
+    setBusy(true);
+    try {
+      const result = await applyMigrationAction(credentials, migrationSql);
+      if (result.ok) {
+        toast.success(result.message);
+        await handleVerifyMigration();
       } else {
         toast.error(result.message);
       }
@@ -156,11 +215,9 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
               </AlertDescription>
             </Alert>
             <p>
-              Necesitas un proyecto gratuito de Supabase. Si aun no lo tienes, crealo en{" "}
-              <a className="underline" href="https://supabase.com" target="_blank" rel="noreferrer">
-                supabase.com
-              </a>{" "}
-              y ten a mano la URL del proyecto, la anon key y la service role key (Settings → API).
+              Puedes conectar Supabase o InsForge. Si ya definiste las variables en Vercel, el asistente las detecta
+              automaticamente y te permite probar la conexion sin volver a pegar claves. Si faltan secretos, podras
+              ingresarlos manualmente en el siguiente paso.
             </p>
           </CardContent>
           <CardFooter className="justify-end">
@@ -173,43 +230,114 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
         <>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 font-medium text-sm">
-              <Database className="size-4" /> Conecta tu base de datos Supabase
+              <Database className="size-4" /> Conecta tu base de datos
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="setup-url">URL del proyecto</Label>
-              <Input
-                id="setup-url"
-                placeholder="https://xxxxx.supabase.co"
-                value={supabaseUrl}
-                onChange={(e) => {
-                  setSupabaseUrl(e.target.value);
-                  setConnectionOk(false);
-                }}
-              />
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(["supabase", "insforge"] as const).map((item) => {
+                const status = envStatuses.find((envStatus) => envStatus.provider === item);
+                return (
+                  <button
+                    type="button"
+                    key={item}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      provider === item ? "border-primary bg-primary/5" : "hover:bg-muted/60"
+                    }`}
+                    onClick={() => {
+                      setProvider(item);
+                      setConnectionOk(false);
+                      setMigrationOk(false);
+                    }}
+                  >
+                    <div className="font-medium">{item === "supabase" ? "Supabase" : "InsForge"}</div>
+                    <div className="mt-1 text-muted-foreground text-xs">
+                      {status?.detected ? "Claves detectadas en Vercel/entorno." : "Faltan claves en Vercel/entorno."}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="setup-anon">Anon key (publica)</Label>
-              <Input
-                id="setup-anon"
-                type="password"
-                placeholder="eyJhbGciOi..."
-                value={supabaseAnonKey}
-                onChange={(e) => setSupabaseAnonKey(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="setup-service">Service role key (secreta, solo servidor)</Label>
-              <Input
-                id="setup-service"
-                type="password"
-                placeholder="eyJhbGciOi..."
-                value={supabaseServiceRoleKey}
-                onChange={(e) => {
-                  setSupabaseServiceRoleKey(e.target.value);
-                  setConnectionOk(false);
-                }}
-              />
-            </div>
+            {selectedEnvStatus && (
+              <Alert>
+                <AlertTitle>{providerEnvDetected ? "Claves detectadas" : "Claves incompletas"}</AlertTitle>
+                <AlertDescription>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedEnvStatus.variables.map((variable) => (
+                      <Badge key={variable.name} variant={variable.detected ? "secondary" : "outline"}>
+                        {variable.detected ? "✓" : "—"} {variable.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+            {!providerEnvDetected && provider === "supabase" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="setup-url">URL del proyecto</Label>
+                  <Input
+                    id="setup-url"
+                    placeholder="https://xxxxx.supabase.co"
+                    value={supabaseUrl}
+                    onChange={(e) => {
+                      setSupabaseUrl(e.target.value);
+                      setConnectionOk(false);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="setup-anon">Anon key (publica)</Label>
+                  <Input
+                    id="setup-anon"
+                    type="password"
+                    placeholder="eyJhbGciOi..."
+                    value={supabaseAnonKey}
+                    onChange={(e) => setSupabaseAnonKey(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="setup-service">Service role key (secreta, solo servidor)</Label>
+                  <Input
+                    id="setup-service"
+                    type="password"
+                    placeholder="eyJhbGciOi..."
+                    value={supabaseServiceRoleKey}
+                    onChange={(e) => {
+                      setSupabaseServiceRoleKey(e.target.value);
+                      setConnectionOk(false);
+                    }}
+                  />
+                </div>
+              </>
+            )}
+            {!providerEnvDetected && provider === "insforge" && (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="setup-insforge-url">URL base de InsForge</Label>
+                  <Input
+                    id="setup-insforge-url"
+                    placeholder="https://api.insforge.app"
+                    value={insforgeBaseUrl}
+                    onChange={(e) => {
+                      setInsforgeBaseUrl(e.target.value);
+                      setConnectionOk(false);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="setup-insforge-api-key">API key</Label>
+                  <Input
+                    id="setup-insforge-api-key"
+                    type="password"
+                    placeholder="ik_..."
+                    value={insforgeApiKey}
+                    onChange={(e) => {
+                      setInsforgeApiKey(e.target.value);
+                      setConnectionOk(false);
+                    }}
+                  />
+                </div>
+              </>
+            )}
             {connectionOk && (
               <p className="flex items-center gap-1.5 text-emerald-600 text-sm">
                 <CheckCircle2 className="size-4" /> Conexion verificada.
@@ -221,11 +349,7 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
               Atras
             </Button>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={busy || !supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey}
-                onClick={handleTestConnection}
-              >
+              <Button variant="outline" disabled={busy || !canTestConnection} onClick={handleTestConnection}>
                 {busy ? "Probando..." : "Probar conexion"}
               </Button>
               <Button disabled={!connectionOk} onClick={() => setStep(2)}>
@@ -244,7 +368,8 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
               <ol className="mt-2 list-decimal space-y-1 pl-4 text-muted-foreground">
                 <li>Copia el SQL de abajo.</li>
                 <li>
-                  Abre el <strong>SQL Editor</strong> de tu proyecto en Supabase y pegalo.
+                  En Supabase, abre el <strong>SQL Editor</strong> y pega el SQL. En InsForge, puedes aplicar esta
+                  migracion directamente desde el boton de abajo usando tu API key.
                 </li>
                 <li>Presiona Run y vuelve aqui para verificar.</li>
               </ol>
@@ -282,6 +407,11 @@ export function SetupWizard({ migrationSql }: SetupWizardProps) {
               Atras
             </Button>
             <div className="flex gap-2">
+              {provider === "insforge" && (
+                <Button variant="outline" disabled={busy} onClick={handleApplyMigration}>
+                  {busy ? "Aplicando..." : "Aplicar en InsForge"}
+                </Button>
+              )}
               <Button variant="outline" disabled={busy} onClick={handleVerifyMigration}>
                 {busy ? "Verificando..." : "Verificar migracion"}
               </Button>

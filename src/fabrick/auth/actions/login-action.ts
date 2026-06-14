@@ -87,17 +87,17 @@ export async function loginAction(email: string, password: string) {
     const { getInsforgeConfig } = await import("@/fabrick/integrations/insforge/client");
     const config = getInsforgeConfig();
 
-    if (config.baseUrl && config.anonKey) {
+    if (config.baseUrl && config.apiKey) {
       try {
         const url = new URL(
-          `/rest/v1/profiles?select=id,email,full_name,role,business_id,password_hash,is_active&email=eq.${encodeURIComponent(email)}`,
+          `/api/database/records/profiles?select=id,email,full_name,role,business_id,password_hash,is_active&email=eq.${encodeURIComponent(email)}&limit=1`,
           config.baseUrl,
         );
         const res = await fetch(url.toString(), {
           headers: {
-            Authorization: `Bearer ${config.anonKey}`,
-            "x-project-id": config.projectId as string,
+            Authorization: `Bearer ${config.apiKey}`,
           },
+          cache: "no-store",
         });
 
         if (res.ok) {
