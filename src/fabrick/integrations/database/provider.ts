@@ -13,6 +13,9 @@ export type ProviderStatus = {
   provider: DatabaseProvider;
   configured: boolean;
   missing: string[];
+  label: string;
+  detected: boolean;
+  variables: { name: string; detected: boolean }[];
 };
 
 export function normalizeProvider(value: unknown): DatabaseProvider {
@@ -32,24 +35,33 @@ export function getEnvProvider(): DatabaseProvider {
 
 export function getProviderEnvStatus(provider: DatabaseProvider): ProviderStatus {
   const missing: string[] = [];
+  const variables: { name: string; detected: boolean }[] = [];
+
+  const addVariable = (name: string, detected: boolean) => {
+    variables.push({ name, detected });
+    if (!detected) missing.push(name);
+  };
 
   if (provider === "supabase") {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) missing.push("NEXT_PUBLIC_SUPABASE_URL");
-    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+    addVariable("NEXT_PUBLIC_SUPABASE_URL", Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL));
+    addVariable("NEXT_PUBLIC_SUPABASE_ANON_KEY", Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY));
+    addVariable("SUPABASE_SERVICE_ROLE_KEY", Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY));
   } else {
-    if (!process.env.NEXT_PUBLIC_INSFORGE_URL && !process.env.INSFORGE_API_URL) {
-      missing.push("NEXT_PUBLIC_INSFORGE_URL or INSFORGE_API_URL");
-    }
-    if (!process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY && !process.env.INSFORGE_ANON_KEY) {
-      missing.push("NEXT_PUBLIC_INSFORGE_ANON_KEY or INSFORGE_ANON_KEY");
-    }
-    if (!process.env.INSFORGE_SERVICE_ROLE_KEY && !process.env.INSFORGE_API_KEY) {
-      missing.push("INSFORGE_SERVICE_ROLE_KEY or INSFORGE_API_KEY");
-    }
+    addVariable("NEXT_PUBLIC_INSFORGE_URL or INSFORGE_API_URL", Boolean(process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.INSFORGE_API_URL));
+    addVariable("NEXT_PUBLIC_INSFORGE_ANON_KEY or INSFORGE_ANON_KEY", Boolean(process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || process.env.INSFORGE_ANON_KEY));
+    addVariable("INSFORGE_SERVICE_ROLE_KEY or INSFORGE_API_KEY", Boolean(process.env.INSFORGE_SERVICE_ROLE_KEY || process.env.INSFORGE_API_KEY));
   }
 
-  return { provider, configured: missing.length === 0, missing };
+  const configured = missing.length === 0;
+
+  return {
+    provider,
+    configured,
+    missing,
+    label: provider === "supabase" ? "Supabase" : "InsForge",
+    detected: configured,
+    variables,
+  };
 }
 
 export function getAllProviderEnvStatuses(): ProviderStatus[] {
