@@ -124,12 +124,21 @@ export function hasSetupLock(): boolean {
 // Si el usuario ya configuro todo via variables de entorno (sus "secretos"),
 // el asistente no es necesario: se considera la app como configurada.
 export function hasFullEnvConfig(): boolean {
-  return Boolean(
+  const hasSupabaseEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
       process.env.SUPABASE_SERVICE_ROLE_KEY &&
       process.env.ACCESS_LOG_SECRET,
   );
+
+  const hasInsForgeEnv = Boolean(
+    (process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.INSFORGE_API_URL || process.env.INSFORGE_BASE_URL) &&
+      (process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || process.env.INSFORGE_ANON_KEY) &&
+      (process.env.INSFORGE_SERVICE_ROLE_KEY || process.env.INSFORGE_API_KEY) &&
+      process.env.ACCESS_LOG_SECRET,
+  );
+
+  return hasSupabaseEnv || hasInsForgeEnv;
 }
 
 export function isSetupComplete(): boolean {

@@ -183,26 +183,34 @@ export async function completeSetupAction(input: unknown): Promise<SetupActionRe
   // Secreto de sesion: respeta el del entorno si existe, si no genera uno fuerte.
   const accessLogSecret = process.env.ACCESS_LOG_SECRET || randomBytes(48).toString("hex");
 
-  saveRuntimeConfig({
-    provider: "supabase",
-    supabaseUrl: credentials.provider === "supabase" ? credentials.url : "",
-    supabaseAnonKey: credentials.provider === "supabase" ? credentials.anonKey : "",
-    supabaseServiceRoleKey: credentials.provider === "supabase" ? credentials.serviceRoleKey : "",
-    accessLogSecret,
-    adminEmail,
-    configuredAt: new Date().toISOString(),
-  });
+  try {
+    saveRuntimeConfig({
+      provider: "supabase",
+      supabaseUrl: credentials.provider === "supabase" ? credentials.url : "",
+      supabaseAnonKey: credentials.provider === "supabase" ? credentials.anonKey : "",
+      supabaseServiceRoleKey: credentials.provider === "supabase" ? credentials.serviceRoleKey : "",
+      accessLogSecret,
+      adminEmail,
+      configuredAt: new Date().toISOString(),
+    });
 
-  // Candado: a partir de aqui el asistente queda bloqueado.
-  writeSetupLock(adminEmail);
+    // Candado local: en Vercel puede no persistir, por eso se protege con try/catch.
+    writeSetupLock(adminEmail);
+  } catch (err) {
+    console.error("[setup] No se pudo guardar config local o lock. En Vercel esto puede ser esperado.", err);
+  }
 
-  await writeActivityRecord({
-    eventType: "setup_completed",
-    path: "/setup",
-    method: "POST",
-    userEmail: adminEmail,
-    metadata: { provider: credentials.provider },
-  });
+  try {
+    await writeActivityRecord({
+      eventType: "setup_completed",
+      path: "/setup",
+      method: "POST",
+      userEmail: adminEmail,
+      metadata: { provider: credentials.provider },
+    });
+  } catch (err) {
+    console.error("[setup] No se pudo registrar actividad de setup_completed.", err);
+  }
 
   const envBlock = [
     "# Configuracion completada.",
