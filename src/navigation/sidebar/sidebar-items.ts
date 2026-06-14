@@ -1,19 +1,30 @@
 import {
   Banknote,
+  BookTemplate,
   Calendar,
   ChartBar,
+  CreditCard,
+  Database,
+  FileStack,
+  FileText,
   Fingerprint,
   Forklift,
   Gauge,
   GraduationCap,
   Kanban,
+  KeyRound,
   LayoutDashboard,
+  Layers,
+  LineChart,
   ListTodo,
   Lock,
+  Paintbrush,
+  Plug,
   type LucideIcon,
   Mail,
   MessageSquare,
   ReceiptText,
+  Settings,
   ShoppingBag,
   SquareArrowUpRight,
   Users,
@@ -76,7 +87,7 @@ export const sidebarItems: NavGroup[] = [
       },
       {
         title: "E-commerce",
-        url: "/dashboard/ecommerce",
+        url: "/dashboard/e-commerce",
         icon: ShoppingBag,
       },
       {
@@ -98,43 +109,38 @@ export const sidebarItems: NavGroup[] = [
     items: [
       {
         title: "Email",
-        url: "/dashboard/mail",
+        url: "/email",
         icon: Mail,
       },
       {
         title: "Chat",
-        url: "/dashboard/coming-soon",
+        url: "/chat",
         icon: MessageSquare,
-        comingSoon: true,
       },
       {
         title: "Calendar",
-        url: "/dashboard/coming-soon",
+        url: "/calendar",
         icon: Calendar,
-        comingSoon: true,
       },
       {
         title: "Kanban",
-        url: "/dashboard/coming-soon",
+        url: "/kanban",
         icon: Kanban,
-        comingSoon: true,
       },
       {
         title: "Invoice",
-        url: "/dashboard/coming-soon",
+        url: "/invoice",
         icon: ReceiptText,
-        comingSoon: true,
       },
       {
         title: "Users",
-        url: "/dashboard/users",
+        url: "/users",
         icon: Users,
       },
       {
         title: "Roles",
-        url: "/dashboard/coming-soon",
+        url: "/roles",
         icon: Lock,
-        comingSoon: true,
       },
       {
         title: "Authentication",
@@ -151,6 +157,77 @@ export const sidebarItems: NavGroup[] = [
   },
   {
     id: 3,
+    label: "Módulos Fabrick",
+    items: [
+      {
+        title: "Admin Hub",
+        url: "/admin",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "Estado DB",
+        url: "/admin/database-status",
+        icon: Database,
+      },
+      {
+        title: "F29 / SII",
+        url: "/admin/contabilidad",
+        icon: Banknote,
+      },
+      {
+        title: "CRM Fabrick",
+        url: "/admin/crm",
+        icon: ChartBar,
+      },
+      {
+        title: "Clientes Fabrick",
+        url: "/admin/customers",
+        icon: Users,
+      },
+      {
+        title: "Cotizaciones",
+        url: "/admin/cotizaciones",
+        icon: FileText,
+      },
+      {
+        title: "Diseño de marca",
+        url: "/admin/diseno",
+        icon: Paintbrush,
+      },
+      {
+        title: "Growth",
+        url: "/admin/landing-builder",
+        icon: Layers,
+        subItems: [
+          { title: "Landing Builder", url: "/admin/landing-builder", icon: Layers },
+          { title: "Plantillas HTML", url: "/admin/templates", icon: BookTemplate },
+          { title: "Páginas Generadas", url: "/admin/generated-pages", icon: FileStack },
+          { title: "Páginas por Token", url: "/admin/public-token-pages", icon: KeyRound },
+          { title: "Estadísticas Páginas", url: "/admin/page-analytics", icon: LineChart },
+        ],
+      },
+      {
+        title: "Commerce",
+        url: "/admin/ecommerce",
+        icon: ShoppingBag,
+        subItems: [
+          { title: "E-commerce", url: "/admin/ecommerce", icon: ShoppingBag },
+          { title: "Checkout", url: "/admin/checkout", icon: CreditCard },
+        ],
+      },
+      {
+        title: "Configuración",
+        url: "/admin/business-settings",
+        icon: Settings,
+        subItems: [
+          { title: "Negocio", url: "/admin/business-settings", icon: Settings },
+          { title: "Integraciones", url: "/admin/integrations", icon: Plug },
+        ],
+      },
+    ],
+  },
+  {
+    id: 4,
     label: "Legacy",
     items: [
       {
@@ -166,14 +243,13 @@ export const sidebarItems: NavGroup[] = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     label: "Misc",
     items: [
       {
         title: "Others",
-        url: "/dashboard/coming-soon",
+        url: "/others",
         icon: SquareArrowUpRight,
-        comingSoon: true,
       },
     ],
   },
