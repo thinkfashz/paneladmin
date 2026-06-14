@@ -3,7 +3,14 @@
 import { z } from "zod";
 
 import { writeActivityRecord } from "@/fabrick/activity/write-activity-record";
-import { checkTablesExist, testSupabaseCredentials } from "@/fabrick/integrations/supabase/rest";
+import {
+  checkDatabaseTablesExist,
+  getAllProviderEnvStatuses,
+  getEnvProvider,
+  resolveDatabaseCredentials,
+  testDatabaseCredentials,
+  upsertAdminProfile,
+} from "@/fabrick/integrations/database/provider";
 import { checkRateLimit } from "@/fabrick/security/rate-limit";
 
 import { canRunSetup, saveRuntimeConfig, writeSetupLock } from "./config-store";
@@ -11,12 +18,13 @@ import { REQUIRED_TABLES } from "./migration-sql";
 import { randomBytes } from "node:crypto";
 
 const credentialsSchema = z.object({
-  supabaseUrl: z
-    .string()
-    .url({ message: "La URL no es valida." })
-    .refine((value) => value.startsWith("https://"), { message: "La URL debe usar https://" }),
-  supabaseAnonKey: z.string().min(20, { message: "La anon key parece incompleta." }),
-  supabaseServiceRoleKey: z.string().min(20, { message: "La service role key parece incompleta." }),
+  provider: z.enum(["supabase", "insforge"]).default("supabase"),
+  supabaseUrl: z.string().optional(),
+  supabaseAnonKey: z.string().optional(),
+  supabaseServiceRoleKey: z.string().optional(),
+  insforgeBaseUrl: z.string().optional(),
+  insforgeAnonKey: z.string().optional(),
+  insforgeProjectId: z.string().optional(),
 });
 
 const completeSetupSchema = credentialsSchema.extend({
@@ -35,6 +43,8 @@ export type SetupActionResult = {
   message: string;
   missingTables?: string[];
   envBlock?: string;
+  envStatuses?: ReturnType<typeof getAllProviderEnvStatuses>;
+  envProvider?: ReturnType<typeof getEnvProvider>;
 };
 
 function setupLocked(): SetupActionResult {
@@ -53,6 +63,17 @@ function setupRateLimited(): SetupActionResult | null {
   return null;
 }
 
+export async function getSetupEnvStatusAction(): Promise<SetupActionResult> {
+  if (!canRunSetup()) return setupLocked();
+
+  return {
+    ok: true,
+    message: "Estado de variables de entorno detectado.",
+    envStatuses: getAllProviderEnvStatuses(),
+    envProvider: getEnvProvider(),
+  };
+}
+
 export async function testConnectionAction(input: unknown): Promise<SetupActionResult> {
   if (!canRunSetup()) return setupLocked();
   const limited = setupRateLimited();
@@ -63,7 +84,10 @@ export async function testConnectionAction(input: unknown): Promise<SetupActionR
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Credenciales invalidas." };
   }
 
-  return testSupabaseCredentials(parsed.data.supabaseUrl, parsed.data.supabaseServiceRoleKey);
+  const credentials = resolveDatabaseCredentials(parsed.data);
+  if (!credentials) return { ok: false, message: "Faltan credenciales para el proveedor seleccionado." };
+
+  return testDatabaseCredentials(credentials);
 }
 
 export async function verifyMigrationAction(input: unknown): Promise<SetupActionResult> {
@@ -76,7 +100,10 @@ export async function verifyMigrationAction(input: unknown): Promise<SetupAction
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Credenciales invalidas." };
   }
 
-  const result = await checkTablesExist(parsed.data.supabaseUrl, parsed.data.supabaseServiceRoleKey, REQUIRED_TABLES);
+  const credentials = resolveDatabaseCredentials(parsed.data);
+  if (!credentials) return { ok: false, message: "Faltan credenciales para el proveedor seleccionado." };
+
+  const result = await checkDatabaseTablesExist(credentials, REQUIRED_TABLES);
 
   if (!result.ok) {
     return {
@@ -99,14 +126,14 @@ export async function completeSetupAction(input: unknown): Promise<SetupActionRe
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Datos invalidos." };
   }
 
-  const { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey, adminFullName, adminEmail, adminPassword } =
-    parsed.data;
-  const baseUrl = supabaseUrl.replace(/\/$/, "");
+  const { adminFullName, adminEmail, adminPassword } = parsed.data;
+  const credentials = resolveDatabaseCredentials(parsed.data);
+  if (!credentials) return { ok: false, message: "Faltan credenciales para el proveedor seleccionado." };
 
-  const connection = await testSupabaseCredentials(baseUrl, supabaseServiceRoleKey);
+  const connection = await testDatabaseCredentials(credentials);
   if (!connection.ok) return connection;
 
-  const tables = await checkTablesExist(baseUrl, supabaseServiceRoleKey, REQUIRED_TABLES);
+  const tables = await checkDatabaseTablesExist(credentials, REQUIRED_TABLES);
   if (!tables.ok) {
     return {
       ok: false,
@@ -115,71 +142,25 @@ export async function completeSetupAction(input: unknown): Promise<SetupActionRe
     };
   }
 
-  const serviceHeaders = {
-    apikey: supabaseServiceRoleKey,
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-
   // Crea (o conserva) la cuenta superadmin con la contrasena hasheada.
   const { hash } = await import("bcryptjs");
   const passwordHash = await hash(adminPassword, 12);
 
-  try {
-    const existingRes = await fetch(
-      `${baseUrl}/rest/v1/profiles?select=id,role&email=eq.${encodeURIComponent(adminEmail)}`,
-      { headers: serviceHeaders, cache: "no-store" },
-    );
-    const existing = existingRes.ok ? await existingRes.json() : [];
-
-    if (Array.isArray(existing) && existing.length > 0) {
-      const updateRes = await fetch(`${baseUrl}/rest/v1/profiles?id=eq.${existing[0].id}`, {
-        method: "PATCH",
-        headers: { ...serviceHeaders, Prefer: "return=minimal" },
-        body: JSON.stringify({
-          full_name: adminFullName,
-          password_hash: passwordHash,
-          role: "superadmin",
-          is_active: true,
-        }),
-      });
-
-      if (!updateRes.ok) {
-        return { ok: false, message: `No se pudo actualizar la cuenta admin (estado ${updateRes.status}).` };
-      }
-    } else {
-      const insertRes = await fetch(`${baseUrl}/rest/v1/profiles`, {
-        method: "POST",
-        headers: { ...serviceHeaders, Prefer: "return=minimal" },
-        body: JSON.stringify({
-          email: adminEmail,
-          full_name: adminFullName,
-          password_hash: passwordHash,
-          role: "superadmin",
-          is_active: true,
-        }),
-      });
-
-      if (!insertRes.ok) {
-        return { ok: false, message: `No se pudo crear la cuenta admin (estado ${insertRes.status}).` };
-      }
-    }
-  } catch (err) {
-    return {
-      ok: false,
-      message:
-        err instanceof Error ? `Error creando la cuenta admin: ${err.message}` : "Error creando la cuenta admin.",
-    };
-  }
+  const adminProfile = await upsertAdminProfile(credentials, {
+    email: adminEmail,
+    fullName: adminFullName,
+    passwordHash,
+  });
+  if (!adminProfile.ok) return adminProfile;
 
   // Secreto de sesion: respeta el del entorno si existe, si no genera uno fuerte.
   const accessLogSecret = process.env.ACCESS_LOG_SECRET || randomBytes(48).toString("hex");
 
   saveRuntimeConfig({
     provider: "supabase",
-    supabaseUrl: baseUrl,
-    supabaseAnonKey,
-    supabaseServiceRoleKey,
+    supabaseUrl: credentials.provider === "supabase" ? credentials.supabaseUrl : "",
+    supabaseAnonKey: credentials.provider === "supabase" ? credentials.supabaseAnonKey : "",
+    supabaseServiceRoleKey: credentials.provider === "supabase" ? credentials.supabaseServiceRoleKey : "",
     accessLogSecret,
     adminEmail,
     configuredAt: new Date().toISOString(),
@@ -193,15 +174,23 @@ export async function completeSetupAction(input: unknown): Promise<SetupActionRe
     path: "/setup",
     method: "POST",
     userEmail: adminEmail,
-    metadata: { provider: "supabase" },
+    metadata: { provider: credentials.provider },
   });
 
   const envBlock = [
     "# Copia estas variables a tus secretos (Vercel, .env.local, etc.).",
     "# Si estan presentes en el entorno, SIEMPRE tienen prioridad sobre lo guardado en el panel.",
-    `NEXT_PUBLIC_SUPABASE_URL=${baseUrl}`,
-    `NEXT_PUBLIC_SUPABASE_ANON_KEY=${supabaseAnonKey}`,
-    `SUPABASE_SERVICE_ROLE_KEY=${supabaseServiceRoleKey}`,
+    ...(credentials.provider === "supabase"
+      ? [
+          `NEXT_PUBLIC_SUPABASE_URL=${credentials.supabaseUrl}`,
+          `NEXT_PUBLIC_SUPABASE_ANON_KEY=${credentials.supabaseAnonKey}`,
+          `SUPABASE_SERVICE_ROLE_KEY=${credentials.supabaseServiceRoleKey}`,
+        ]
+      : [
+          `INSFORGE_BASE_URL=${credentials.insforgeBaseUrl}`,
+          `INSFORGE_ANON_KEY=${credentials.insforgeAnonKey}`,
+          `INSFORGE_PROJECT_ID=${credentials.insforgeProjectId}`,
+        ]),
     `ACCESS_LOG_SECRET=${accessLogSecret}`,
   ].join("\n");
 
