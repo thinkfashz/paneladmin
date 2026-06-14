@@ -111,3 +111,14 @@ También se cambió la regla de fuerza:
 - Antes: `FABRICK_SETUP_FORCE=true` mostraba setup siempre.
 - Ahora: si hay env completo, no muestra setup.
 - Para forzar manualmente se usa `FABRICK_SETUP_FORCE=reset`.
+
+## Corrección login InsForge
+
+Se corrigió `src/fabrick/auth/actions/login-action.ts` para que el login con InsForge use:
+
+- `NEXT_PUBLIC_INSFORGE_URL` o `INSFORGE_API_URL` o `INSFORGE_BASE_URL`
+- `INSFORGE_SERVICE_ROLE_KEY` o `INSFORGE_API_KEY`
+- Endpoint raw SQL `/api/database/advance/rawsql/unrestricted`
+
+Motivo:
+La versión anterior seguía usando `getInsforgeConfig()`, `INSFORGE_PROJECT_ID` y `/rest/v1/profiles`, lo cual no correspondía a la configuración actual.
