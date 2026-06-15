@@ -5,7 +5,19 @@ import { SESSION_COOKIE_NAME, verifySessionToken } from "../token";
 import type { AuthLookupResult, AuthRequestContext } from "../types";
 
 export async function getInsforgeCurrentUser(context: AuthRequestContext = {}): Promise<AuthLookupResult> {
-  if (!process.env.INSFORGE_BASE_URL || !process.env.INSFORGE_PROJECT_ID) {
+  const hasInsForgeUrl = Boolean(
+    process.env.NEXT_PUBLIC_INSFORGE_URL ||
+      process.env.INSFORGE_API_URL ||
+      process.env.INSFORGE_BASE_URL,
+  );
+
+  const hasInsForgeServerKey = Boolean(
+    process.env.INSFORGE_SERVICE_ROLE_KEY ||
+      process.env.INSFORGE_API_KEY ||
+      process.env.INSFORGE_ANON_KEY,
+  );
+
+  if (process.env.DATABASE_PROVIDER === "insforge" && !hasInsForgeUrl && !hasInsForgeServerKey) {
     return {
       ok: false,
       user: null,

@@ -122,3 +122,17 @@ Se corrigió `src/fabrick/auth/actions/login-action.ts` para que el login con In
 
 Motivo:
 La versión anterior seguía usando `getInsforgeConfig()`, `INSFORGE_PROJECT_ID` y `/rest/v1/profiles`, lo cual no correspondía a la configuración actual.
+
+## Corrección final provider/session InsForge
+
+Se corrigió `src/fabrick/auth/provider.ts` para detectar InsForge con las variables nuevas:
+
+- `DATABASE_PROVIDER=insforge`
+- `NEXT_PUBLIC_INSFORGE_URL`
+- `INSFORGE_API_URL`
+- `INSFORGE_BASE_URL`
+- `INSFORGE_SERVICE_ROLE_KEY`
+- `INSFORGE_API_KEY`
+- `INSFORGE_ANON_KEY`
+
+También se corrigió `src/fabrick/auth/adapters/insforge-auth-adapter.ts` para validar sesiones sin exigir `INSFORGE_PROJECT_ID`.
