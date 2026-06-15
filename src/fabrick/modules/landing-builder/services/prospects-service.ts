@@ -223,6 +223,39 @@ export async function listProspects() {
   };
 }
 
+export async function getProspectByLandingToken(token: string) {
+  await ensureProspectsTable();
+
+  const query = `
+    select
+      id,
+      brand_name,
+      project_name,
+      followers,
+      social_networks,
+      phone,
+      email,
+      website,
+      color_palette,
+      notes,
+      source,
+      landing_token,
+      landing_url,
+      created_at
+    from public.crm_prospects
+    where landing_token = ${sqlString(token)}
+    limit 1
+  `;
+
+  const result = await runInsForgeSql(query);
+  if (!result.ok) return null;
+
+  const row = extractRows(result.data)[0];
+  if (!row) return null;
+
+  return mapProspect(row);
+}
+
 export async function getProspectById(id: string) {
   await ensureProspectsTable();
 

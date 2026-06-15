@@ -78,3 +78,10 @@
 - Se añadió card moderna de detalles.
 - Se añadió botón para crear landing desde un prospecto.
 - Al guardar una página desde un prospecto, se asocia el token/link al CRM.
+
+## Metadata WhatsApp / Open Graph para demos
+
+- Se añadió metadata dinámica en `/p/[token]`.
+- El título, descripción e imagen social usan datos del prospecto asociado.
+- Se añadió imagen Open Graph dinámica con iniciales de la marca y paleta de colores.
+- WhatsApp, Facebook, Telegram y X pueden mostrar preview enriquecido al compartir el link.
