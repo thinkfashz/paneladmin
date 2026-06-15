@@ -14,7 +14,16 @@ import { buildReactDemoHtml } from "../services/page-engine-service";
 import type { GeneratedPageContentType } from "../types";
 import { ContainerScroll } from "./container-scroll";
 
-export function CreateGeneratedPageForm() {
+export function CreateGeneratedPageForm({
+  initialValues,
+}: {
+  initialValues?: {
+    title?: string;
+    clientName?: string;
+    niche?: string;
+    prospectId?: string;
+  };
+}) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [contentType, setContentType] = useState<GeneratedPageContentType>("html");
   const [html, setHtml] = useState(demoLandingHtml);
@@ -118,6 +127,7 @@ export function CreateGeneratedPageForm() {
         )}
 
         <input type="hidden" name="contentType" value={contentType} />
+        <input type="hidden" name="prospectId" value={initialValues?.prospectId || ""} />
 
         <div className="grid gap-2 rounded-xl border bg-muted/30 p-2 md:grid-cols-2">
           <button
@@ -146,21 +156,21 @@ export function CreateGeneratedPageForm() {
             <label className="font-medium text-sm" htmlFor="title">
               Título
             </label>
-            <Input id="title" name="title" defaultValue="Demo compartible Fabrick" />
+            <Input id="title" name="title" defaultValue={initialValues?.title || "Demo compartible Fabrick"} />
           </div>
 
           <div className="space-y-2">
             <label className="font-medium text-sm" htmlFor="clientName">
               Cliente
             </label>
-            <Input id="clientName" name="clientName" defaultValue="Cliente demo" />
+            <Input id="clientName" name="clientName" defaultValue={initialValues?.clientName || "Cliente demo"} />
           </div>
 
           <div className="space-y-2">
             <label className="font-medium text-sm" htmlFor="niche">
               Nicho
             </label>
-            <Input id="niche" name="niche" defaultValue="Negocio local" />
+            <Input id="niche" name="niche" defaultValue={initialValues?.niche || "Negocio local"} />
           </div>
         </div>
 

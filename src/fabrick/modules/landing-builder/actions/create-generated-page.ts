@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createGeneratedPage } from "../services/page-engine-service";
+import { attachLandingToProspect } from "../services/prospects-service";
 import type { GeneratedPageContentType } from "../types";
 
 export async function createGeneratedPageAction(formData: FormData): Promise<void> {
@@ -14,6 +15,7 @@ export async function createGeneratedPageAction(formData: FormData): Promise<voi
   const html = String(formData.get("html") || "").trim();
   const reactCode = String(formData.get("reactCode") || "").trim();
   const css = String(formData.get("css") || "").trim();
+  const prospectId = String(formData.get("prospectId") || "").trim();
 
   if (!title) {
     redirect("/admin/landing-builder?error=missing-title");
@@ -36,6 +38,14 @@ export async function createGeneratedPageAction(formData: FormData): Promise<voi
     css,
     contentType,
   });
+
+  if (prospectId && result.page?.token) {
+    await attachLandingToProspect({
+      prospectId,
+      landingToken: result.page.token,
+      landingUrl: `/p/${result.page.token}`,
+    });
+  }
 
   revalidatePath("/admin/landing-builder");
   revalidatePath("/admin/generated-pages");

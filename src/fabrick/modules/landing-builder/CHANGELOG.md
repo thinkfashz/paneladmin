@@ -69,3 +69,12 @@
 
 - Se reemplazaron todas las directivas `@ts-expect-error` restantes por `@ts-ignore`.
 - Esto evita fallos de build por directivas no usadas en CSS Anchor Positioning.
+
+## CRM de prospectos con importación JSON
+
+- Se añadió importador de archivos JSON para prospectos.
+- Se extraen datos: marca, proyecto, seguidores, redes, número, correo, sitio web y paleta.
+- Se añadió lista moderna de prospectos.
+- Se añadió card moderna de detalles.
+- Se añadió botón para crear landing desde un prospecto.
+- Al guardar una página desde un prospecto, se asocia el token/link al CRM.
