@@ -1,31 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createGeneratedPage } from "../services/page-engine-service";
 
-export async function createGeneratedPageAction(formData: FormData) {
+export async function createGeneratedPageAction(formData: FormData): Promise<void> {
   const title = String(formData.get("title") || "").trim();
   const clientName = String(formData.get("clientName") || "").trim();
   const niche = String(formData.get("niche") || "").trim();
   const html = String(formData.get("html") || "").trim();
 
   if (!title) {
-    return {
-      ok: false,
-      message: "Debes ingresar un título.",
-      token: null,
-      publicUrl: null,
-    };
+    redirect("/admin/landing-builder?error=missing-title");
   }
 
   if (!html || !html.includes("<html")) {
-    return {
-      ok: false,
-      message: "Debes ingresar un HTML completo que incluya la etiqueta <html>.",
-      token: null,
-      publicUrl: null,
-    };
+    redirect("/admin/landing-builder?error=invalid-html");
   }
 
   const result = await createGeneratedPage({
@@ -38,10 +29,9 @@ export async function createGeneratedPageAction(formData: FormData) {
   revalidatePath("/admin/landing-builder");
   revalidatePath("/admin/generated-pages");
 
-  return {
-    ok: result.ok,
-    message: result.message,
-    token: result.page?.token ?? null,
-    publicUrl: result.page ? `/p/${result.page.token}` : null,
-  };
+  if (!result.ok || !result.page?.token) {
+    redirect("/admin/landing-builder?error=create-failed");
+  }
+
+  redirect(`/p/${result.page.token}`);
 }

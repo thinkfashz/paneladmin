@@ -10,8 +10,22 @@ import { listGeneratedPages } from "./services/page-engine-service";
 
 export const dynamic = "force-dynamic";
 
-export default async function LandingBuilderModulePage() {
+export default async function LandingBuilderModulePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
   const result = await listGeneratedPages();
+
+  const errorMessage =
+    params?.error === "missing-title"
+      ? "Debes ingresar un título."
+      : params?.error === "invalid-html"
+        ? "Debes ingresar un HTML completo que incluya la etiqueta <html>."
+        : params?.error === "create-failed"
+          ? "No se pudo crear la página. Revisa la conexión con InsForge."
+          : null;
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
@@ -27,6 +41,12 @@ export default async function LandingBuilderModulePage() {
           Crea una página HTML, guárdala en InsForge y compártela con un link público único.
         </p>
       </section>
+
+      {errorMessage && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive text-sm">
+          {errorMessage}
+        </div>
+      )}
 
       <CreateGeneratedPageForm />
 
