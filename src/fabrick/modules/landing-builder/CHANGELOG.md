@@ -28,3 +28,7 @@
 - Se actualizó el componente global `Button`.
 - Se añadieron `LiquidButton` y `MetalButton`.
 - Se aplicó `MetalButton` al importador HTML y al botón de guardar del Page Engine.
+
+## Fix dependencia Slot
+
+- Se añadió `@radix-ui/react-slot` porque el componente global `Button` usa `Slot` para soportar `asChild`.
