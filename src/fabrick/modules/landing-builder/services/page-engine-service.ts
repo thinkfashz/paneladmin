@@ -244,6 +244,30 @@ export async function listGeneratedPages() {
   };
 }
 
+export async function deleteGeneratedPageByToken(token: string) {
+  await ensureGeneratedPagesTable();
+
+  const query = `
+    delete from public.generated_pages
+    where token = ${sqlString(token)}
+    returning id, token
+  `;
+
+  const result = await runInsForgeSql(query);
+
+  if (!result.ok) {
+    return {
+      ok: false,
+      message: result.message,
+    };
+  }
+
+  return {
+    ok: true,
+    message: "Demo eliminada correctamente.",
+  };
+}
+
 export async function getGeneratedPageByToken(token: string) {
   const query = `
     select id, token, title, client_name, niche, html, react_code, css, content_type, status, created_at, updated_at
