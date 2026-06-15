@@ -32,3 +32,8 @@
 ## Fix dependencia Slot
 
 - Se añadió `@radix-ui/react-slot` porque el componente global `Button` usa `Slot` para soportar `asChild`.
+
+## Fix compatibilidad Button size
+
+- Se añadieron tamaños `xs`, `xl`, `icon-xs`, `icon-sm` e `icon-lg`.
+- Esto mantiene compatibilidad con componentes existentes del dashboard original.
