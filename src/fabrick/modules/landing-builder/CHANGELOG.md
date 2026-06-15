@@ -46,3 +46,11 @@
 - El sistema genera un HTML ejecutable con React, ReactDOM, Babel y Tailwind desde CDN.
 - Se guarda el código React y CSS en `generated_pages`.
 - El link público `/p/[token]` puede mostrar demos React aisladas en iframe.
+
+## Soporte inicial para componentes avanzados
+
+- Se instaló `cobe`.
+- Se añadió `Globe` como componente interno revisado.
+- Se añadió `GlobeDemo`.
+- Se añadió ruta `/admin/landing-builder/globe-demo`.
+- Se documentó que TSX con imports externos requiere Vite Builder/Sandbox para ejecución arbitraria segura.

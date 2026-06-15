@@ -34,3 +34,18 @@ MVP funcional.
 - Conexión con CRM.
 - Duplicar páginas.
 - Exportar HTML.
+
+## Componentes React avanzados
+
+El Page Engine puede guardar código de componentes avanzados como texto, pero no debe ejecutar imports arbitrarios dentro del admin principal.
+
+Para componentes con dependencias como `cobe`, la estrategia segura es:
+
+1. Instalar dependencia en el proyecto.
+2. Crear componente interno revisado.
+3. Renderizarlo en una ruta segura.
+4. Guardar el código fuente como referencia editable.
+5. En una fase futura, compilar código arbitrario usando Vite Builder/Sandbox.
+
+Ruta de prueba:
+`/admin/landing-builder/globe-demo`

@@ -1,0 +1,10 @@
+Este archivo documenta el tipo de componente avanzado que el Page Engine debe poder guardar como texto:
+- TSX
+- "use client"
+- imports npm
+- interfaces TypeScript
+- canvas
+- dependencia cobe
+
+En esta fase el sistema guarda el código como referencia y usa una implementación interna segura para renderizar el preview.
+La siguiente fase será Vite Builder/Sandbox para compilar código TSX arbitrario.
