@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { createGeneratedPageAction } from "../actions/create-generated-page";
 import { demoLandingHtml } from "../data";
+import { ContainerScroll } from "./container-scroll";
 
 export function CreateGeneratedPageForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -54,7 +55,7 @@ export function CreateGeneratedPageForm() {
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_520px]">
       <form action={createGeneratedPageAction} className="space-y-4 rounded-2xl border bg-background p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
@@ -136,41 +137,44 @@ export function CreateGeneratedPageForm() {
         </Button>
       </form>
 
-      <section className="rounded-2xl border bg-background p-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Smartphone className="size-5" />
-            <div>
-              <h2 className="font-semibold text-lg">Preview móvil</h2>
-              <p className="text-muted-foreground text-sm">Vista adaptada a iPhone 17</p>
+      <section className="overflow-hidden rounded-2xl border bg-background">
+        <ContainerScroll
+          titleComponent={
+            <div className="mx-auto max-w-xl px-4">
+              <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border bg-primary/10 text-primary">
+                <Smartphone className="size-6" />
+              </div>
+              <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                Visor HTML · Admin Preview
+              </p>
+              <h2 className="mt-2 font-bold text-2xl tracking-tight md:text-4xl">
+                Vista animada del HTML antes de publicar
+              </h2>
+              <p className="mt-3 text-muted-foreground text-sm">
+                Importa o edita tu HTML y revisa cómo se verá dentro del visor interactivo.
+              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-1 rounded-full border bg-muted px-3 py-1 text-xs">
-            <Eye className="size-3" />
-            Live
-          </div>
-        </div>
-
-        <div className="mx-auto w-full max-w-[390px] rounded-[3rem] border border-black/20 bg-neutral-950 p-3 shadow-2xl">
-          <div className="relative overflow-hidden rounded-[2.4rem] bg-black">
-            <div className="absolute left-1/2 top-2 z-10 h-6 w-28 -translate-x-1/2 rounded-full bg-black" />
-
-            <div className="flex h-9 items-center justify-between bg-black px-7 pt-2 text-[10px] text-white">
-              <span>9:41</span>
-              <span>●●● 5G 🔋</span>
+          }
+        >
+          <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white">
+            <div className="flex h-10 items-center justify-between border-b bg-neutral-950 px-4 text-[11px] text-white">
+              <span>Preview</span>
+              <span className="inline-flex items-center gap-1">
+                <Eye className="size-3" />
+                Live
+              </span>
             </div>
 
             <iframe
-              title="Preview HTML móvil"
+              title="Preview HTML en ContainerScroll"
               srcDoc={previewHtml}
               sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              className="h-[720px] w-full border-0 bg-white"
+              className="h-full w-full border-0 bg-white"
             />
           </div>
-        </div>
+        </ContainerScroll>
 
-        <p className="mt-4 text-center text-muted-foreground text-xs">
+        <p className="px-4 pb-4 text-center text-muted-foreground text-xs">
           Este visor no guarda cambios automáticamente. Para publicar, presiona “Guardar y generar link público”.
         </p>
       </section>
