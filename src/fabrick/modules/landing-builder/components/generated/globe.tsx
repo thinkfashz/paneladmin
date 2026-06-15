@@ -280,7 +280,7 @@ export function Globe({
           key={marker.id}
           style={{
             position: "absolute",
-            // @ts-expect-error CSS Anchor Positioning
+            // @ts-ignore CSS Anchor Positioning
             positionAnchor: `--cobe-${marker.id}`,
             bottom: "anchor(top)",
             left: "anchor(center)",
