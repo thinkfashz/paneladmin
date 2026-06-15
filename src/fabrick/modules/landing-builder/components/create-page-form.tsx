@@ -4,20 +4,29 @@ import { useMemo, useRef, useState } from "react";
 
 import { Code2, Eye, FileUp, Rocket, Smartphone } from "lucide-react";
 
-import { Button, MetalButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { createGeneratedPageAction } from "../actions/create-generated-page";
-import { demoLandingHtml } from "../data";
+import { demoLandingHtml, demoReactCode, demoReactCss } from "../data";
+import { buildReactDemoHtml } from "../services/page-engine-service";
+import type { GeneratedPageContentType } from "../types";
 import { ContainerScroll } from "./container-scroll";
 
 export function CreateGeneratedPageForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [contentType, setContentType] = useState<GeneratedPageContentType>("html");
   const [html, setHtml] = useState(demoLandingHtml);
+  const [reactCode, setReactCode] = useState(demoReactCode);
+  const [css, setCss] = useState(demoReactCss);
   const [fileName, setFileName] = useState<string | null>(null);
 
   const previewHtml = useMemo(() => {
+    if (contentType === "react") {
+      return buildReactDemoHtml(reactCode, css);
+    }
+
     if (!html.trim()) {
       return `
         <!doctype html>
@@ -31,7 +40,7 @@ export function CreateGeneratedPageForm() {
     }
 
     return html;
-  }, [html]);
+  }, [contentType, html, reactCode, css]);
 
   async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -43,14 +52,27 @@ export function CreateGeneratedPageForm() {
       file.name.toLowerCase().endsWith(".html") ||
       file.name.toLowerCase().endsWith(".htm");
 
-    if (!isHtml) {
-      alert("Selecciona un archivo .html o .htm");
+    const isReact =
+      file.name.toLowerCase().endsWith(".jsx") ||
+      file.name.toLowerCase().endsWith(".tsx") ||
+      file.name.toLowerCase().endsWith(".js");
+
+    if (!isHtml && !isReact) {
+      alert("Selecciona un archivo .html, .htm, .jsx, .tsx o .js");
       event.target.value = "";
       return;
     }
 
     const content = await file.text();
-    setHtml(content);
+
+    if (isReact) {
+      setContentType("react");
+      setReactCode(content);
+    } else {
+      setContentType("html");
+      setHtml(content);
+    }
+
     setFileName(file.name);
   }
 
@@ -61,9 +83,9 @@ export function CreateGeneratedPageForm() {
           <div className="flex items-center gap-2">
             <Code2 className="size-5" />
             <div>
-              <h2 className="font-semibold text-lg">Crear página HTML</h2>
+              <h2 className="font-semibold text-lg">Crear demo</h2>
               <p className="text-muted-foreground text-sm">
-                Escribe, pega o importa un archivo HTML completo.
+                Carga HTML o pega una app React simple y compártela por link.
               </p>
             </div>
           </div>
@@ -72,20 +94,20 @@ export function CreateGeneratedPageForm() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".html,.htm,text/html"
+              accept=".html,.htm,.jsx,.tsx,.js,text/html"
               className="hidden"
               onChange={handleFileImport}
             />
 
-            <MetalButton
+            <Button
               type="button"
-              variant="default"
+              variant="outline"
               className="gap-2"
               onClick={() => fileInputRef.current?.click()}
             >
               <FileUp className="size-4" />
-              Importar HTML
-            </MetalButton>
+              Importar archivo
+            </Button>
           </div>
         </div>
 
@@ -95,12 +117,36 @@ export function CreateGeneratedPageForm() {
           </div>
         )}
 
+        <input type="hidden" name="contentType" value={contentType} />
+
+        <div className="grid gap-2 rounded-xl border bg-muted/30 p-2 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setContentType("html")}
+            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+              contentType === "html" ? "bg-primary text-primary-foreground" : "hover:bg-background"
+            }`}
+          >
+            HTML
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setContentType("react")}
+            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+              contentType === "react" ? "bg-primary text-primary-foreground" : "hover:bg-background"
+            }`}
+          >
+            React Demo
+          </button>
+        </div>
+
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-2">
             <label className="font-medium text-sm" htmlFor="title">
               Título
             </label>
-            <Input id="title" name="title" defaultValue="Propuesta Premium Demo" />
+            <Input id="title" name="title" defaultValue="Demo compartible Fabrick" />
           </div>
 
           <div className="space-y-2">
@@ -118,23 +164,57 @@ export function CreateGeneratedPageForm() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="font-medium text-sm" htmlFor="html">
-            HTML completo
-          </label>
-          <Textarea
-            id="html"
-            name="html"
-            className="min-h-[420px] font-mono text-xs"
-            value={html}
-            onChange={(event) => setHtml(event.target.value)}
-          />
-        </div>
+        {contentType === "html" ? (
+          <div className="space-y-2">
+            <label className="font-medium text-sm" htmlFor="html">
+              HTML completo
+            </label>
+            <Textarea
+              id="html"
+              name="html"
+              className="min-h-[420px] font-mono text-xs"
+              value={html}
+              onChange={(event) => setHtml(event.target.value)}
+            />
+            <input type="hidden" name="reactCode" value={reactCode} />
+            <input type="hidden" name="css" value={css} />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <label className="font-medium text-sm" htmlFor="reactCode">
+                Código React
+              </label>
+              <Textarea
+                id="reactCode"
+                name="reactCode"
+                className="min-h-[360px] font-mono text-xs"
+                value={reactCode}
+                onChange={(event) => setReactCode(event.target.value)}
+              />
+            </div>
 
-        <MetalButton type="submit" variant="gold" className="gap-2">
+            <div className="space-y-2">
+              <label className="font-medium text-sm" htmlFor="css">
+                CSS opcional
+              </label>
+              <Textarea
+                id="css"
+                name="css"
+                className="min-h-[120px] font-mono text-xs"
+                value={css}
+                onChange={(event) => setCss(event.target.value)}
+              />
+            </div>
+
+            <input type="hidden" name="html" value={html} />
+          </div>
+        )}
+
+        <Button type="submit" className="gap-2">
           <Rocket className="size-4" />
-          Guardar y generar link público
-        </MetalButton>
+          Guardar demo y generar link
+        </Button>
       </form>
 
       <section className="overflow-hidden rounded-2xl border bg-background">
@@ -145,20 +225,20 @@ export function CreateGeneratedPageForm() {
                 <Smartphone className="size-6" />
               </div>
               <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                Visor HTML · Admin Preview
+                Visor {contentType === "react" ? "React" : "HTML"} · Admin Preview
               </p>
               <h2 className="mt-2 font-bold text-2xl tracking-tight md:text-4xl">
-                Vista animada del HTML antes de publicar
+                Demo compartible antes de publicar
               </h2>
               <p className="mt-3 text-muted-foreground text-sm">
-                Importa o edita tu HTML y revisa cómo se verá dentro del visor interactivo.
+                Edita, revisa y guarda para generar un link público.
               </p>
             </div>
           }
         >
           <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white">
             <div className="flex h-10 items-center justify-between border-b bg-neutral-950 px-4 text-[11px] text-white">
-              <span>Preview</span>
+              <span>{contentType === "react" ? "React Demo" : "HTML Preview"}</span>
               <span className="inline-flex items-center gap-1">
                 <Eye className="size-3" />
                 Live
@@ -166,16 +246,16 @@ export function CreateGeneratedPageForm() {
             </div>
 
             <iframe
-              title="Preview HTML en ContainerScroll"
+              title="Preview demo compartible"
               srcDoc={previewHtml}
-              sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
               className="h-full w-full border-0 bg-white"
             />
           </div>
         </ContainerScroll>
 
         <p className="px-4 pb-4 text-center text-muted-foreground text-xs">
-          Este visor no guarda cambios automáticamente. Para publicar, presiona “Guardar y generar link público”.
+          El código corre aislado dentro de un iframe. Para compartir, guarda la demo y abre el link público.
         </p>
       </section>
     </div>

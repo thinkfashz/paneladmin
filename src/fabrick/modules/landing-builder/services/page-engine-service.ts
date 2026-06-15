@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 
-import type { GeneratedPage } from "../types";
+import type { GeneratedPage, GeneratedPageContentType } from "../types";
 
 function normalizeUrl(value: string) {
   return value.trim().replace(/\/+$/, "");
@@ -91,6 +91,33 @@ export function createPublicToken() {
   return randomBytes(8).toString("hex");
 }
 
+export function buildReactDemoHtml(reactCode: string, css = "") {
+  return `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>React Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    ${css}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    ${reactCode}
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>`;
+}
+
 export async function ensureGeneratedPagesTable() {
   const query = `
     create table if not exists public.generated_pages (
@@ -100,13 +127,21 @@ export async function ensureGeneratedPagesTable() {
       client_name text,
       niche text,
       html text not null,
+      react_code text,
+      css text,
+      content_type text not null default 'html',
       status text not null default 'published',
       created_at timestamptz not null default now(),
       updated_at timestamptz
     );
 
+    alter table public.generated_pages add column if not exists react_code text;
+    alter table public.generated_pages add column if not exists css text;
+    alter table public.generated_pages add column if not exists content_type text not null default 'html';
+
     create index if not exists generated_pages_token_idx on public.generated_pages(token);
     create index if not exists generated_pages_status_idx on public.generated_pages(status);
+    create index if not exists generated_pages_content_type_idx on public.generated_pages(content_type);
   `;
 
   return runInsForgeSql(query);
@@ -116,23 +151,43 @@ export async function createGeneratedPage(input: {
   title: string;
   clientName?: string;
   niche?: string;
-  html: string;
+  html?: string;
+  reactCode?: string;
+  css?: string;
+  contentType: GeneratedPageContentType;
 }) {
   await ensureGeneratedPagesTable();
 
   const token = createPublicToken();
+  const html =
+    input.contentType === "react"
+      ? buildReactDemoHtml(input.reactCode || "", input.css || "")
+      : input.html || "";
 
   const query = `
-    insert into public.generated_pages (token, title, client_name, niche, html, status)
+    insert into public.generated_pages (
+      token,
+      title,
+      client_name,
+      niche,
+      html,
+      react_code,
+      css,
+      content_type,
+      status
+    )
     values (
       ${sqlString(token)},
       ${sqlString(input.title)},
       ${sqlString(input.clientName || null)},
       ${sqlString(input.niche || null)},
-      ${sqlString(input.html)},
+      ${sqlString(html)},
+      ${sqlString(input.reactCode || null)},
+      ${sqlString(input.css || null)},
+      ${sqlString(input.contentType)},
       'published'
     )
-    returning id, token, title, client_name, niche, html, status, created_at, updated_at
+    returning id, token, title, client_name, niche, html, react_code, css, content_type, status, created_at, updated_at
   `;
 
   const result = await runInsForgeSql(query);
@@ -157,7 +212,7 @@ export async function createGeneratedPage(input: {
 
   return {
     ok: true,
-    message: "Página creada correctamente.",
+    message: "Demo creada correctamente.",
     page: mapGeneratedPage(row),
   };
 }
@@ -166,7 +221,7 @@ export async function listGeneratedPages() {
   await ensureGeneratedPagesTable();
 
   const query = `
-    select id, token, title, client_name, niche, html, status, created_at, updated_at
+    select id, token, title, client_name, niche, html, react_code, css, content_type, status, created_at, updated_at
     from public.generated_pages
     order by created_at desc
     limit 20
@@ -191,7 +246,7 @@ export async function listGeneratedPages() {
 
 export async function getGeneratedPageByToken(token: string) {
   const query = `
-    select id, token, title, client_name, niche, html, status, created_at, updated_at
+    select id, token, title, client_name, niche, html, react_code, css, content_type, status, created_at, updated_at
     from public.generated_pages
     where token = ${sqlString(token)}
     and status = 'published'
@@ -216,6 +271,9 @@ function mapGeneratedPage(row: Record<string, unknown>): GeneratedPage {
     clientName: row.client_name ? String(row.client_name) : null,
     niche: row.niche ? String(row.niche) : null,
     html: String(row.html ?? ""),
+    reactCode: row.react_code ? String(row.react_code) : null,
+    css: row.css ? String(row.css) : null,
+    contentType: String(row.content_type ?? "html") as GeneratedPage["contentType"],
     status: String(row.status ?? "published") as GeneratedPage["status"],
     createdAt: String(row.created_at ?? ""),
     updatedAt: row.updated_at ? String(row.updated_at) : null,

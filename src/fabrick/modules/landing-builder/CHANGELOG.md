@@ -37,3 +37,12 @@
 
 - Se añadieron tamaños `xs`, `xl`, `icon-xs`, `icon-sm` e `icon-lg`.
 - Esto mantiene compatibilidad con componentes existentes del dashboard original.
+
+## React Demo compartible
+
+- Se añadió modo `React Demo`.
+- Se permite pegar código React tipo `function App()`.
+- Se permite importar `.jsx`, `.tsx` o `.js`.
+- El sistema genera un HTML ejecutable con React, ReactDOM, Babel y Tailwind desde CDN.
+- Se guarda el código React y CSS en `generated_pages`.
+- El link público `/p/[token]` puede mostrar demos React aisladas en iframe.

@@ -1,3 +1,53 @@
+export const demoReactCode = `function App() {
+  return (
+    <main className="min-h-screen bg-neutral-950 text-white font-sans">
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <div className="inline-flex rounded-full border border-orange-400/30 bg-orange-500/10 px-4 py-2 text-sm text-orange-200">
+          Demo React generada con Fabrick
+        </div>
+
+        <h1 className="mt-8 max-w-4xl text-5xl font-black tracking-tight md:text-7xl">
+          Una landing React lista para compartir con clientes.
+        </h1>
+
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-300">
+          Este código fue pegado en el admin, renderizado en un visor aislado y puede compartirse como demo mediante un link público único.
+        </p>
+
+        <div className="mt-10 flex flex-wrap gap-4">
+          <button className="rounded-2xl bg-gradient-to-r from-orange-500 to-yellow-400 px-6 py-4 font-bold text-black shadow-xl shadow-orange-500/20">
+            Solicitar demo
+          </button>
+          <button className="rounded-2xl border border-white/15 px-6 py-4 font-bold text-white">
+            Ver propuesta
+          </button>
+        </div>
+
+        <div className="mt-16 grid gap-4 md:grid-cols-3">
+          {[
+            ["24h", "Entrega rápida"],
+            ["100%", "Responsive"],
+            ["Demo", "Compartible"],
+          ].map(([value, label]) => (
+            <div key={label} className="rounded-3xl border border-white/10 bg-white/5 p-6">
+              <strong className="block text-4xl">{value}</strong>
+              <span className="mt-2 block text-neutral-400">{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}`;
+
+export const demoReactCss = `body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}`;
+
 export const demoLandingHtml = `<!doctype html>
 <html lang="es">
 <head>
@@ -83,6 +133,6 @@ export const demoLandingHtml = `<!doctype html>
 export const moduleInfo = {
   id: "landing-builder",
   title: "Landing Builder",
-  description: "Motor para crear HTMLs, guardarlos y compartirlos con token.",
+  description: "Motor para crear HTMLs o demos React, guardarlos y compartirlos con token.",
   route: "/admin/landing-builder",
 };

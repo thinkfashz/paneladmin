@@ -77,6 +77,7 @@ export default async function LandingBuilderModulePage({
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{page.title}</p>
                       <Badge variant="secondary">{page.status}</Badge>
+                      <Badge variant="outline">{page.contentType}</Badge>
                     </div>
                     <p className="text-muted-foreground text-xs">
                       Cliente: {page.clientName || "Sin cliente"} · Nicho: {page.niche || "Sin nicho"}

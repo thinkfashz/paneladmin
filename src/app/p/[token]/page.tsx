@@ -19,7 +19,7 @@ export default async function PublicGeneratedPage({
       <iframe
         title={page.title}
         srcDoc={page.html}
-        sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
         className="h-screen w-full border-0"
       />
     </main>

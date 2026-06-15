@@ -1,4 +1,5 @@
 export type GeneratedPageStatus = "draft" | "published" | "archived";
+export type GeneratedPageContentType = "html" | "react";
 
 export type GeneratedPage = {
   id: string;
@@ -7,6 +8,9 @@ export type GeneratedPage = {
   clientName: string | null;
   niche: string | null;
   html: string;
+  reactCode: string | null;
+  css: string | null;
+  contentType: GeneratedPageContentType;
   status: GeneratedPageStatus;
   createdAt: string;
   updatedAt: string | null;
