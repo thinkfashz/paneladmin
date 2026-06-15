@@ -64,3 +64,8 @@
 
 - Se reemplazó `@ts-expect-error` por `@ts-ignore` para CSS Anchor Positioning.
 - Esto evita error de TypeScript por directiva no usada en Vercel.
+
+## Fix completo TypeScript Globe
+
+- Se reemplazaron todas las directivas `@ts-expect-error` restantes por `@ts-ignore`.
+- Esto evita fallos de build por directivas no usadas en CSS Anchor Positioning.

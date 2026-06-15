@@ -321,7 +321,7 @@ export function Globe({
             key={arc.id}
             style={{
               position: "absolute",
-              // @ts-expect-error CSS Anchor Positioning
+              // @ts-ignore CSS Anchor Positioning
               positionAnchor: `--cobe-arc-${arc.id}`,
               bottom: "anchor(top)",
               left: "anchor(center)",
