@@ -12,7 +12,6 @@ import { createGeneratedPageAction } from "../actions/create-generated-page";
 import { demoLandingHtml, demoReactCode, demoReactCss } from "../data";
 import { buildReactDemoHtml } from "../services/page-engine-service";
 import type { GeneratedPageContentType } from "../types";
-import { ContainerScroll } from "./container-scroll";
 
 export function CreateGeneratedPageForm({
   initialValues,
@@ -86,7 +85,7 @@ export function CreateGeneratedPageForm({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_520px]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,0.82fr)_minmax(360px,1.18fr)]">
       <form action={createGeneratedPageAction} className="space-y-4 rounded-2xl border bg-background p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
@@ -133,7 +132,7 @@ export function CreateGeneratedPageForm({
           <button
             type="button"
             onClick={() => setContentType("html")}
-            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+            className={`rounded-lg px-4 py-3 font-medium text-sm ${
               contentType === "html" ? "bg-primary text-primary-foreground" : "hover:bg-background"
             }`}
           >
@@ -143,7 +142,7 @@ export function CreateGeneratedPageForm({
           <button
             type="button"
             onClick={() => setContentType("react")}
-            className={`rounded-lg px-4 py-3 text-sm font-medium ${
+            className={`rounded-lg px-4 py-3 font-medium text-sm ${
               contentType === "react" ? "bg-primary text-primary-foreground" : "hover:bg-background"
             }`}
           >
@@ -227,46 +226,49 @@ export function CreateGeneratedPageForm({
         </Button>
       </form>
 
-      <section className="overflow-hidden rounded-2xl border bg-background">
-        <ContainerScroll
-          titleComponent={
-            <div className="mx-auto max-w-xl px-4">
-              <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border bg-primary/10 text-primary">
-                <Smartphone className="size-6" />
-              </div>
-              <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                Visor {contentType === "react" ? "React" : "HTML"} · Admin Preview
-              </p>
-              <h2 className="mt-2 font-bold text-2xl tracking-tight md:text-4xl">
-                Demo compartible antes de publicar
-              </h2>
-              <p className="mt-3 text-muted-foreground text-sm">
-                Edita, revisa y guarda para generar un link público.
-              </p>
+      <section className="overflow-hidden rounded-[2rem] border bg-gradient-to-b from-background to-muted/20 p-3 shadow-sm xl:sticky xl:top-24 xl:min-h-[calc(100dvh-7rem)]">
+        <div className="flex min-h-[82dvh] flex-col items-center justify-center gap-5 xl:h-[calc(100dvh-9rem)] xl:min-h-[720px] xl:max-h-[980px]">
+          <div className="mx-auto max-w-xl px-4 text-center">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border bg-primary/10 text-primary">
+              <Smartphone className="size-6" />
             </div>
-          }
-        >
-          <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white">
-            <div className="flex h-10 items-center justify-between border-b bg-neutral-950 px-4 text-[11px] text-white">
-              <span>{contentType === "react" ? "React Demo" : "HTML Preview"}</span>
-              <span className="inline-flex items-center gap-1">
-                <Eye className="size-3" />
-                Live
-              </span>
-            </div>
-
-            <iframe
-              title="Preview demo compartible"
-              srcDoc={previewHtml}
-              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
-              className="h-full w-full border-0 bg-white"
-            />
+            <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+              Visor {contentType === "react" ? "React" : "HTML"} · Admin Preview
+            </p>
+            <h2 className="mt-2 font-bold text-2xl tracking-tight md:text-4xl">
+              Demo compartible antes de publicar
+            </h2>
+            <p className="mt-3 text-muted-foreground text-sm">
+              Vista tipo iPhone, centrada y lista para revisar antes de generar el link público.
+            </p>
           </div>
-        </ContainerScroll>
 
-        <p className="px-4 pb-4 text-center text-muted-foreground text-xs">
-          El código corre aislado dentro de un iframe. Para compartir, guarda la demo y abre el link público.
-        </p>
+          <div className="relative mx-auto h-[78dvh] min-h-[620px] w-full max-w-[430px] rounded-[3.2rem] border-[10px] border-neutral-900 bg-neutral-950 p-2 shadow-[0_42px_120px_rgba(0,0,0,.36)] xl:h-full">
+            <div className="absolute left-1/2 top-2 z-20 h-7 w-32 -translate-x-1/2 rounded-b-3xl bg-neutral-950" />
+            <div className="absolute left-1/2 top-4 z-30 h-1.5 w-14 -translate-x-1/2 rounded-full bg-neutral-700" />
+
+            <div className="flex h-full w-full flex-col overflow-hidden rounded-[2.35rem] border border-white/10 bg-white">
+              <div className="flex h-11 shrink-0 items-center justify-between border-b bg-neutral-950 px-5 text-[11px] text-white">
+                <span>{contentType === "react" ? "React Demo" : "HTML Preview"}</span>
+                <span className="inline-flex items-center gap-1">
+                  <Eye className="size-3" />
+                  Live
+                </span>
+              </div>
+
+              <iframe
+                title="Preview demo compartible"
+                srcDoc={previewHtml}
+                sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                className="h-full min-h-0 flex-1 border-0 bg-white"
+              />
+            </div>
+          </div>
+
+          <p className="max-w-xl px-4 text-center text-muted-foreground text-xs">
+            El visor ocupa casi toda la pantalla. Sigue bajando para salir del preview y ver la lista de links generados.
+          </p>
+        </div>
       </section>
     </div>
   );
