@@ -1,9 +1,13 @@
-export type LandingBuilderModuleStatus = "base" | "existing" | "demo" | "connected" | "coming-soon" | "needs-work";
+export type GeneratedPageStatus = "draft" | "published" | "archived";
 
-export type LandingBuilderModuleConfig = {
-  id: "landing-builder";
+export type GeneratedPage = {
+  id: string;
+  token: string;
   title: string;
-  description: string;
-  route?: string | null;
-  status: LandingBuilderModuleStatus;
+  clientName: string | null;
+  niche: string | null;
+  html: string;
+  status: GeneratedPageStatus;
+  createdAt: string;
+  updatedAt: string | null;
 };

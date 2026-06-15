@@ -1,41 +1,36 @@
-# Landing Builder
+# Landing Builder / Page Engine
 
-## ID del módulo
-`landing-builder`
+## Objetivo
+Crear páginas HTML personalizadas, guardarlas en base de datos y compartirlas mediante un link público con token único.
 
-## Ruta principal
+## Ruta admin
 `/admin/landing-builder`
 
-## Estado actual
-`base`
+## Ruta pública
+`/p/[token]`
 
-## Lógica del módulo
-Generar páginas comerciales rápidas con secciones, copy, diseño y CTA.
+## Lógica
+1. El usuario escribe título, cliente, nicho y HTML.
+2. El sistema crea una tabla `generated_pages` si no existe.
+3. El sistema guarda el HTML en la base de datos.
+4. El sistema genera un token público único.
+5. El sistema permite abrir la página pública con `/p/[token]`.
 
-## Descripción
-Motor para crear landings HTML por nicho.
+## Estado
+MVP funcional.
 
-## Estructura
-- `page.tsx`: pantalla principal o wrapper visual del módulo.
-- `nav.ts`: configuración de navegación del módulo.
-- `types.ts`: tipos propios del módulo.
-- `data.ts`: datos demo, constantes o seeds temporales.
-- `components/`: componentes visuales internos.
-- `actions/`: server actions propias del módulo.
-- `services/`: acceso a datos, adaptadores y queries.
-- `MODULE.md`: documentación viva de lógica.
-- `CHANGELOG.md`: historial de cambios por instrucción.
+## Reglas
+- Este módulo guarda HTML completo como string.
+- La vista pública renderiza el HTML dentro de `iframe srcDoc`.
+- No se debe mezclar con CRM todavía.
+- Luego se conecta con clientes/prospectos/cotizaciones.
+- Cada cambio debe registrarse en CHANGELOG.md.
 
-## Reglas de trabajo
-1. No mezclar lógica de este módulo en otro módulo.
-2. No modificar auth/setup/db desde aquí salvo que sea estrictamente necesario.
-3. Si se cambia una funcionalidad, actualizar este `MODULE.md`.
-4. Si se hace un cambio técnico, registrar entrada en `CHANGELOG.md`.
-5. Las rutas de `src/app` deben ser wrappers livianos.
-
-## Pendiente
-- Conectar datos reales si aplica.
-- Separar componentes grandes.
-- Crear acciones y servicios propios.
-- Crear validaciones.
-- Agregar pruebas.
+## Próximas fases
+- Editor visual por bloques.
+- Selector de plantillas.
+- Estadísticas de visitas.
+- Estados: borrador, publicado, pausado.
+- Conexión con CRM.
+- Duplicar páginas.
+- Exportar HTML.
