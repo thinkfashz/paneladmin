@@ -5,6 +5,7 @@ import { CheckCircle2, ExternalLink, FileText, Globe2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { deleteGeneratedPageAction } from "./actions/delete-generated-page";
 import { CreateGeneratedPageForm } from "./components/create-page-form";
 import { ProspectCrmPanel } from "./components/prospect-crm-panel";
 import { listGeneratedPages } from "./services/page-engine-service";
@@ -17,6 +18,7 @@ export default async function LandingBuilderModulePage({
 }: {
   searchParams?: Promise<{
     error?: string;
+    deleted?: string;
     created?: string;
     type?: string;
     imported?: string;
@@ -43,7 +45,9 @@ export default async function LandingBuilderModulePage({
                 ? "No se pudieron importar los prospectos. Revisa InsForge."
                 : params?.error === "create-failed"
                   ? "No se pudo crear la página. Revisa la conexión con InsForge."
-                  : null;
+                  : params?.error === "delete-failed"
+                    ? "No se pudo eliminar la demo. Revisa la conexión con InsForge."
+                    : null;
 
   const initialValues = selectedProspect
     ? {
@@ -72,6 +76,13 @@ export default async function LandingBuilderModulePage({
       {errorMessage && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive text-sm">
           {errorMessage}
+        </div>
+      )}
+
+      {params?.deleted && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-emerald-700 text-sm dark:text-emerald-300">
+          <CheckCircle2 className="size-4" />
+          Demo eliminada correctamente.
         </div>
       )}
 
@@ -140,7 +151,7 @@ export default async function LandingBuilderModulePage({
               {result.pages.map((page) => (
                 <div key={page.id} className="flex flex-col gap-3 rounded-xl border p-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium">{page.title}</p>
                       <Badge variant="secondary">{page.status}</Badge>
                       <Badge variant="outline">{page.contentType}</Badge>
@@ -151,7 +162,19 @@ export default async function LandingBuilderModulePage({
                     <p className="text-muted-foreground text-xs">Token: {page.token}</p>
                   </div>
 
-                  <ButtonLink href={`/p/${page.token}`} />
+                  <div className="flex flex-col gap-2 md:min-w-[180px]">
+                    <ButtonLink href={`/p/${page.token}`} />
+
+                    <form action={deleteGeneratedPageAction}>
+                      <input type="hidden" name="token" value={page.token} />
+                      <button
+                        type="submit"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive text-sm"
+                      >
+                        Eliminar
+                      </button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>
