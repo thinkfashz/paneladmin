@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { Code2, Eye, FileUp, Rocket, Smartphone } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, MetalButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -77,15 +77,15 @@ export function CreateGeneratedPageForm() {
               onChange={handleFileImport}
             />
 
-            <Button
+            <MetalButton
               type="button"
-              variant="outline"
+              variant="default"
               className="gap-2"
               onClick={() => fileInputRef.current?.click()}
             >
               <FileUp className="size-4" />
               Importar HTML
-            </Button>
+            </MetalButton>
           </div>
         </div>
 
@@ -131,10 +131,10 @@ export function CreateGeneratedPageForm() {
           />
         </div>
 
-        <Button type="submit" className="gap-2">
+        <MetalButton type="submit" variant="gold" className="gap-2">
           <Rocket className="size-4" />
           Guardar y generar link público
-        </Button>
+        </MetalButton>
       </form>
 
       <section className="overflow-hidden rounded-2xl border bg-background">

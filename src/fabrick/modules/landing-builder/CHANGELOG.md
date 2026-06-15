@@ -22,3 +22,9 @@
 - Se instaló `framer-motion`.
 - Se reemplazó el visor móvil estático por un visor animado con scroll y perspectiva.
 - El HTML importado o editado se muestra dentro del nuevo visor.
+
+## Botones premium
+
+- Se actualizó el componente global `Button`.
+- Se añadieron `LiquidButton` y `MetalButton`.
+- Se aplicó `MetalButton` al importador HTML y al botón de guardar del Page Engine.
