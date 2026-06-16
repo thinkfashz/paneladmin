@@ -25,6 +25,19 @@ const businessTypes = [
   "Negocio local",
 ];
 
+function getCodeStats(value: string) {
+  const safe = value || "";
+  return {
+    chars: safe.length,
+    lines: safe ? safe.split(/\r\n|\r|\n/).length : 0,
+  };
+}
+
+function getCodePreview(value: string) {
+  const lines = (value || "").split(/\r\n|\r|\n/);
+  return lines.slice(0, 28).join("\n");
+}
+
 export function CreateGeneratedPageForm({
   initialValues,
 }: {
@@ -41,11 +54,29 @@ export function CreateGeneratedPageForm({
   const [reactCode, setReactCode] = useState(demoReactCode);
   const [css, setCss] = useState(demoReactCss);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [clipboardBusy, setClipboardBusy] = useState(false);
+
+  const activeCode = contentType === "react" ? reactCode : html;
+  const activeStats = getCodeStats(activeCode);
 
   const previewHtml = useMemo(() => {
     if (contentType === "react") return buildReactDemoHtml(reactCode, css);
     return buildHtmlPreviewDocument(html);
   }, [contentType, html, reactCode, css]);
+
+  function setImportedCode(content: string, mode: GeneratedPageContentType, name: string) {
+    setContentType(mode);
+
+    if (mode === "react") {
+      setReactCode(content);
+    } else {
+      setHtml(content);
+    }
+
+    setFileName(name);
+    setEditorOpen(false);
+  }
 
   async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -68,16 +99,26 @@ export function CreateGeneratedPageForm({
     }
 
     const content = await file.text();
+    setImportedCode(content, isReact ? "react" : "html", file.name);
+  }
 
-    if (isReact) {
-      setContentType("react");
-      setReactCode(content);
-    } else {
-      setContentType("html");
-      setHtml(content);
+  async function pasteFromClipboard() {
+    try {
+      setClipboardBusy(true);
+      const content = await navigator.clipboard.readText();
+
+      if (!content.trim()) {
+        alert("El portapapeles está vacío.");
+        return;
+      }
+
+      const looksReact = /function\s+App\s*\(|export\s+default\s+function\s+App|import\s+React|from\s+["']react["']/.test(content);
+      setImportedCode(content, looksReact ? "react" : contentType, "Pegado desde portapapeles");
+    } catch {
+      alert("No pude leer el portapapeles. En Android es más seguro subir el archivo .tsx o .html.");
+    } finally {
+      setClipboardBusy(false);
     }
-
-    setFileName(file.name);
   }
 
   return (
@@ -90,27 +131,45 @@ export function CreateGeneratedPageForm({
             </div>
             <div>
               <h2 className="font-bold text-xl tracking-tight">Crear demo</h2>
-              <p className="text-muted-foreground text-sm">Configura la demo con datos del prospecto y revisa el preview móvil.</p>
+              <p className="text-muted-foreground text-sm">Para código largo, sube un archivo .tsx/.jsx/.html. El formulario guarda el código completo sin cargarlo entero en pantalla.</p>
             </div>
           </div>
 
           <input ref={fileInputRef} type="file" accept=".html,.htm,.jsx,.tsx,.js,text/html" className="hidden" onChange={handleFileImport} />
-          <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="size-4" />
-            Importar archivo
-          </Button>
+          <div className="grid gap-2 sm:grid-cols-2 md:min-w-[360px]">
+            <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="size-4" />
+              Subir archivo
+            </Button>
+            <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={pasteFromClipboard} disabled={clipboardBusy}>
+              {clipboardBusy ? "Pegando..." : "Pegar"}
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)]">
           <div className="space-y-4">
-            {fileName && (
-              <div className="rounded-xl border bg-muted/40 px-3 py-2 text-muted-foreground text-sm">
-                Archivo importado: <span className="font-medium text-foreground">{fileName}</span>
+            {(fileName || activeStats.chars > 0) && (
+              <div className="rounded-2xl border bg-muted/40 p-3 text-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium">{fileName || "Código cargado"}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : "HTML"}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setEditorOpen((value) => !value)} className="rounded-xl border bg-background px-3 py-2 font-medium text-xs">
+                    {editorOpen ? "Ocultar código" : "Editar código"}
+                  </button>
+                </div>
               </div>
             )}
 
             <input type="hidden" name="contentType" value={contentType} />
             <input type="hidden" name="prospectId" value={initialValues?.prospectId || ""} />
+            <input type="hidden" name="html" value={html} />
+            <input type="hidden" name="reactCode" value={reactCode} />
+            <input type="hidden" name="css" value={css} />
 
             <div className="grid gap-2 rounded-2xl border bg-muted/20 p-2 sm:grid-cols-2">
               <button
@@ -157,24 +216,34 @@ export function CreateGeneratedPageForm({
               </div>
             </div>
 
-            {contentType === "html" ? (
-              <div className="space-y-2">
-                <label className="font-medium text-sm" htmlFor="html">HTML completo</label>
-                <Textarea id="html" name="html" className="min-h-[360px] rounded-2xl font-mono text-xs" value={html} onChange={(event) => setHtml(event.target.value)} />
-                <input type="hidden" name="reactCode" value={reactCode} />
-                <input type="hidden" name="css" value={css} />
-              </div>
+            {editorOpen ? (
+              contentType === "html" ? (
+                <div className="space-y-2">
+                  <label className="font-medium text-sm" htmlFor="htmlEditor">HTML completo</label>
+                  <Textarea id="htmlEditor" className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs" value={html} onChange={(event) => setHtml(event.target.value)} />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="font-medium text-sm" htmlFor="reactCodeEditor">Código React</label>
+                    <Textarea id="reactCodeEditor" className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs" value={reactCode} onChange={(event) => setReactCode(event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-medium text-sm" htmlFor="cssEditor">CSS opcional</label>
+                    <Textarea id="cssEditor" className="max-h-[240px] min-h-[110px] overflow-y-auto rounded-2xl font-mono text-xs" value={css} onChange={(event) => setCss(event.target.value)} />
+                  </div>
+                </div>
+              )
             ) : (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="reactCode">Código React</label>
-                  <Textarea id="reactCode" name="reactCode" className="min-h-[320px] rounded-2xl font-mono text-xs" value={reactCode} onChange={(event) => setReactCode(event.target.value)} />
+              <div className="rounded-2xl border bg-muted/30 p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="font-medium text-sm">Vista compacta del código</p>
+                  <span className="rounded-full bg-background px-2 py-1 text-muted-foreground text-xs">Completo guardado</span>
                 </div>
-                <div className="space-y-2">
-                  <label className="font-medium text-sm" htmlFor="css">CSS opcional</label>
-                  <Textarea id="css" name="css" className="min-h-[110px] rounded-2xl font-mono text-xs" value={css} onChange={(event) => setCss(event.target.value)} />
-                </div>
-                <input type="hidden" name="html" value={html} />
+                <pre className="max-h-[240px] overflow-hidden whitespace-pre-wrap rounded-xl bg-background p-3 font-mono text-[11px] text-muted-foreground">
+                  {getCodePreview(activeCode)}
+                  {activeStats.lines > 28 ? "\n\n... código completo cargado en memoria, usa Editar código para verlo ..." : ""}
+                </pre>
               </div>
             )}
 
