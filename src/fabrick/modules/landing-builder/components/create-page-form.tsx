@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 
-import { Code2, Eye, FileUp, Rocket, Smartphone, Upload } from "lucide-react";
+import { Code2, Eye, Rocket, Smartphone, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { createGeneratedPageAction } from "../actions/create-generated-page";
 import { demoLandingHtml, demoReactCode, demoReactCss } from "../data";
-import { buildReactDemoHtml } from "../services/page-engine-service";
+import { buildHtmlPreviewDocument, buildReactDemoHtml } from "../services/preview-engine";
 import type { GeneratedPageContentType } from "../types";
 
 const businessTypes = [
@@ -44,20 +44,7 @@ export function CreateGeneratedPageForm({
 
   const previewHtml = useMemo(() => {
     if (contentType === "react") return buildReactDemoHtml(reactCode, css);
-
-    if (!html.trim()) {
-      return `
-        <!doctype html>
-        <html>
-          <body style="font-family: system-ui; padding: 24px;">
-            <h1>Sin HTML cargado</h1>
-            <p>Importa un archivo .html o escribe el código para ver el preview.</p>
-          </body>
-        </html>
-      `;
-    }
-
-    return html;
+    return buildHtmlPreviewDocument(html);
   }, [contentType, html, reactCode, css]);
 
   async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
