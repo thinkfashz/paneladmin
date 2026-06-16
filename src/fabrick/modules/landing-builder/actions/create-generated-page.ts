@@ -21,11 +21,11 @@ export async function createGeneratedPageAction(formData: FormData): Promise<voi
     redirect("/admin/landing-builder?error=missing-title");
   }
 
-  if (contentType === "html" && (!html || !html.includes("<html"))) {
+  if (contentType === "html" && !html) {
     redirect("/admin/landing-builder?error=invalid-html");
   }
 
-  if (contentType === "react" && (!reactCode || !reactCode.includes("function App"))) {
+  if (contentType === "react" && !reactCode) {
     redirect("/admin/landing-builder?error=invalid-react");
   }
 
