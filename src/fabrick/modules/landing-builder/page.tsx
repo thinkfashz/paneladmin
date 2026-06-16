@@ -125,7 +125,9 @@ export default async function LandingBuilderModulePage({
         </div>
       )}
 
-      <CreateGeneratedPageForm initialValues={initialValues} />
+      <section id="landing-demo-builder" className="scroll-mt-24">
+        <CreateGeneratedPageForm initialValues={initialValues} />
+      </section>
 
       <Card>
         <CardHeader>
