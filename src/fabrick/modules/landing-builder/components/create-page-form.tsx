@@ -85,7 +85,7 @@ export function CreateGeneratedPageForm({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,0.82fr)_minmax(360px,1.18fr)]">
+    <div id="create-demo" className="scroll-mt-24 grid gap-6 xl:grid-cols-[minmax(0,0.82fr)_minmax(360px,1.18fr)]">
       <form action={createGeneratedPageAction} className="space-y-4 rounded-2xl border bg-background p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
