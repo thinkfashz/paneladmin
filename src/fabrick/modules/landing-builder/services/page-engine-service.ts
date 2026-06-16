@@ -1,6 +1,9 @@
 import { randomBytes } from "crypto";
 
 import type { GeneratedPage, GeneratedPageContentType } from "../types";
+import { buildHtmlPreviewDocument, buildReactDemoHtml } from "./preview-engine";
+
+export { buildHtmlPreviewDocument, buildReactDemoHtml } from "./preview-engine";
 
 function normalizeUrl(value: string) {
   return value.trim().replace(/\/+$/, "");
@@ -91,33 +94,6 @@ export function createPublicToken() {
   return randomBytes(8).toString("hex");
 }
 
-export function buildReactDemoHtml(reactCode: string, css = "") {
-  return `<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>React Demo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    ${css}
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="text/babel">
-    ${reactCode}
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
-  </script>
-</body>
-</html>`;
-}
-
 export async function ensureGeneratedPagesTable() {
   const query = `
     create table if not exists public.generated_pages (
@@ -162,7 +138,7 @@ export async function createGeneratedPage(input: {
   const html =
     input.contentType === "react"
       ? buildReactDemoHtml(input.reactCode || "", input.css || "")
-      : input.html || "";
+      : buildHtmlPreviewDocument(input.html || "");
 
   const query = `
     insert into public.generated_pages (
