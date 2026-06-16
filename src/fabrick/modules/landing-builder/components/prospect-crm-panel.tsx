@@ -9,12 +9,12 @@ import {
   ExternalLink,
   FileJson,
   Globe,
-  Instagram,
   Mail,
   MessageCircle,
   Palette,
   Rocket,
   Search,
+  Share2,
   Upload,
   Users,
 } from "lucide-react";
@@ -212,7 +212,7 @@ export function ProspectCrmPanel({
           <h4 className="flex items-center gap-2 font-bold"><Globe className="size-4" /> Accesos rápidos</h4>
           <div className="mt-3 grid gap-2">
             <ContactLink href={activeProspect.phone ? whatsappHref : null} label="WhatsApp" icon={<MessageCircle className="size-4" />} />
-            <ContactLink href={safeUrl(instagramUrl)} label="Instagram" icon={<Instagram className="size-4" />} />
+            <ContactLink href={safeUrl(instagramUrl)} label="Instagram" icon={<Share2 className="size-4" />} />
             <ContactLink href={websiteUrl} label="Sitio web" icon={<Globe className="size-4" />} />
             <ContactLink href={activeProspect.email ? `mailto:${activeProspect.email}` : null} label="Correo" icon={<Mail className="size-4" />} />
           </div>
