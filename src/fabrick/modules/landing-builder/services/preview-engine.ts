@@ -56,7 +56,9 @@ const SUPPORTED_ICON_NAMES = [
 ];
 
 function stripCodeFence(value: string) {
-  return String(value || "")
+  const raw = String(value || "").trim();
+
+  return raw
     .replace(/^```(?:html|react|jsx|tsx|javascript|js)?\s*/i, "")
     .replace(/```\s*$/i, "")
     .trim();
@@ -148,7 +150,7 @@ export function buildReactDemoHtml(reactCode: string, css = "") {
   <title>React Demo Preview</title>
   <style>
     html, body, #root { min-height: 100%; margin: 0; }
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#0f172a; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#0f172a; color:#e5e7eb; }
     * { box-sizing: border-box; }
     ${safeCss}
   </style>
@@ -219,6 +221,23 @@ export function buildReactDemoHtml(reactCode: string, css = "") {
         };
       }
 
+      function transformPreviewSource(userCode) {
+        const attempts = [
+          { presets: [["typescript", { isTSX:true, allExtensions:true }], ["env", { modules:false }], "react"], filename:"preview.tsx" },
+          { presets: [["env", { modules:false }], "react"], filename:"preview.jsx" },
+          { presets: ["react"], filename:"preview.jsx" }
+        ];
+        const messages = [];
+        for (let i = 0; i < attempts.length; i += 1) {
+          try {
+            return Babel.transform(userCode, { ...attempts[i], sourceType:"script" }).code;
+          } catch (err) {
+            messages.push(err && err.message ? err.message : String(err));
+          }
+        }
+        throw new Error(messages.join(" | "));
+      }
+
       function runPreview(){
         const motion = new Proxy({}, { get: function(_target, tag){ return makePrimitive(String(tag), ""); } });
         function AnimatePresence(props){ return React.createElement(React.Fragment, null, props.children); }
@@ -248,7 +267,7 @@ export function buildReactDemoHtml(reactCode: string, css = "") {
         let userCode = window.__FABRICK_REACT_SOURCE__ || "";
         if (!/function\s+App\s*\(/.test(userCode) && !/const\s+App\s*=/.test(userCode)) throw new Error("No encontré function App() ni const App = ... en el código React.");
         userCode += "\n;window.__FabrickPreviewApp = typeof App !== 'undefined' ? App : window.__FabrickPreviewApp;";
-        const transformed = Babel.transform(userCode, { presets: [["typescript", { isTSX:true, allExtensions:true }], ["env", { modules:false }], "react"], filename:"preview.tsx", sourceType:"script" }).code;
+        const transformed = transformPreviewSource(userCode);
         (0, eval)(transformed);
         const App = window.__FabrickPreviewApp;
         if (!App) throw new Error("El componente App no quedó disponible después de compilar.");
@@ -259,7 +278,7 @@ export function buildReactDemoHtml(reactCode: string, css = "") {
         .then(function(){ return loadScriptList(["https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js", "https://unpkg.com/react@18/umd/react.development.js"], "React"); })
         .then(function(){ return loadScriptList(["https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js", "https://unpkg.com/react-dom@18/umd/react-dom.development.js"], "ReactDOM"); })
         .then(function(){ return loadScriptList(["https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js", "https://unpkg.com/@babel/standalone/babel.min.js"], "Babel"); })
-        .then(function(){ const tw = document.createElement("script"); tw.src="https://cdn.tailwindcss.com"; document.head.appendChild(tw); })
+        .then(function(){ return loadScriptList(["https://cdn.tailwindcss.com"], "Tailwind").catch(function(err){ console.warn(err); }); })
         .then(runPreview)
         .catch(function(err){ console.error(err); showError("No se pudo cargar el motor React", err); });
     })();
