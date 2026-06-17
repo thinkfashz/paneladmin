@@ -48,6 +48,79 @@ export const demoReactCss = `body {
   box-sizing: border-box;
 }`;
 
+export const demoHtmlApp = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTML App Fabrick</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="bg-slate-950 text-white">
+  <main class="min-h-screen font-sans">
+    <nav class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 p-3 backdrop-blur">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <strong>Fabrick HTML App</strong>
+        <div class="flex gap-2 text-xs">
+          <button data-action="go" data-target="inicio" class="rounded-full bg-white px-3 py-2 font-bold text-slate-950">Inicio</button>
+          <button data-action="go" data-target="cotizador" class="rounded-full border border-white/15 px-3 py-2">Cotizador</button>
+          <button data-action="go" data-target="contacto" class="rounded-full border border-white/15 px-3 py-2">Contacto</button>
+        </div>
+      </div>
+    </nav>
+
+    <section data-screen="inicio" class="mx-auto max-w-5xl px-6 py-16">
+      <span class="rounded-full border border-orange-400/30 bg-orange-500/10 px-4 py-2 text-xs font-bold text-orange-200">HTML funcional sin React</span>
+      <h1 class="mt-8 max-w-3xl text-5xl font-black tracking-tight md:text-7xl">Landing interactiva con botones reales.</h1>
+      <p class="mt-5 max-w-2xl text-slate-300">Usa data-action para crear navegación interna, WhatsApp, modales, cálculos y acciones sin codificar todo desde cero.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <button data-action="go" data-target="cotizador" class="rounded-2xl bg-gradient-to-r from-orange-500 to-yellow-400 px-6 py-4 font-black text-black">Calcular precio</button>
+        <button data-action="modal" data-target="modal-demo" class="rounded-2xl border border-white/15 px-6 py-4 font-bold">Ver modal</button>
+      </div>
+    </section>
+
+    <section data-screen="cotizador" hidden class="mx-auto max-w-5xl px-6 py-16">
+      <div data-calc class="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <h2 class="text-3xl font-black">Cotizador interno</h2>
+        <div class="mt-6 grid gap-4 md:grid-cols-3">
+          <label class="space-y-2 text-sm">Cantidad
+            <input data-calc-field="cantidad" value="3" type="number" class="w-full rounded-xl border border-white/10 bg-slate-900 p-3" />
+          </label>
+          <label class="space-y-2 text-sm">Precio unitario
+            <input data-calc-field="precio" value="120000" type="number" class="w-full rounded-xl border border-white/10 bg-slate-900 p-3" />
+          </label>
+          <div class="rounded-2xl bg-slate-900 p-4">
+            <span class="text-xs text-slate-400">Total estimado</span>
+            <strong data-calc-result data-formula="cantidad * precio" data-prefix="$" class="mt-1 block text-3xl text-emerald-300">$360.000</strong>
+          </div>
+        </div>
+        <button data-action="go" data-target="contacto" class="mt-6 rounded-2xl bg-white px-5 py-3 font-black text-slate-950">Enviar datos</button>
+      </div>
+    </section>
+
+    <section data-screen="contacto" hidden class="mx-auto max-w-5xl px-6 py-16">
+      <form data-action="lead" data-success="Lead capturado dentro de la demo." class="max-w-xl rounded-3xl border border-white/10 bg-white/5 p-6">
+        <h2 class="text-3xl font-black">Captura de lead</h2>
+        <input name="nombre" required placeholder="Nombre" class="mt-5 w-full rounded-xl border border-white/10 bg-slate-900 p-3" />
+        <input name="telefono" required placeholder="WhatsApp" class="mt-3 w-full rounded-xl border border-white/10 bg-slate-900 p-3" />
+        <div class="mt-5 flex flex-wrap gap-3">
+          <button class="rounded-2xl bg-emerald-500 px-5 py-3 font-black text-slate-950">Guardar lead simulado</button>
+          <button type="button" data-action="whatsapp" data-phone="56900000000" data-message="Hola, quiero una demo Fabrick" class="rounded-2xl border border-white/15 px-5 py-3 font-bold">WhatsApp</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="modal-demo" class="rounded-3xl border border-white/10 bg-slate-950 p-0 text-white backdrop:bg-black/70">
+    <div class="max-w-sm p-6">
+      <h3 class="text-2xl font-black">Modal funcional</h3>
+      <p class="mt-3 text-slate-300">Este modal se abre con data-action="modal" y se cierra con data-action="close-modal".</p>
+      <button data-action="close-modal" data-target="modal-demo" class="mt-5 rounded-xl bg-white px-4 py-2 font-bold text-slate-950">Cerrar</button>
+    </div>
+  </dialog>
+</body>
+</html>`;
+
 export const demoLandingHtml = `<!doctype html>
 <html lang="es">
 <head>
