@@ -25,6 +25,8 @@ const businessTypes = [
   "Negocio local",
 ];
 
+type SourceMode = "inline" | "file";
+
 function getCodeStats(value: string) {
   const safe = value || "";
   return {
@@ -50,6 +52,7 @@ export function CreateGeneratedPageForm({
 }) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [contentType, setContentType] = useState<GeneratedPageContentType>("html");
+  const [sourceMode, setSourceMode] = useState<SourceMode>("inline");
   const [html, setHtml] = useState(demoLandingHtml);
   const [reactCode, setReactCode] = useState(demoReactCode);
   const [css, setCss] = useState(demoReactCss);
@@ -65,8 +68,9 @@ export function CreateGeneratedPageForm({
     return buildHtmlPreviewDocument(html);
   }, [contentType, html, reactCode, css]);
 
-  function setImportedCode(content: string, mode: GeneratedPageContentType, name: string) {
+  function setImportedCode(content: string, mode: GeneratedPageContentType, name: string, origin: SourceMode) {
     setContentType(mode);
+    setSourceMode(origin);
 
     if (mode === "react") {
       setReactCode(content);
@@ -76,6 +80,11 @@ export function CreateGeneratedPageForm({
 
     setFileName(name);
     setEditorOpen(false);
+  }
+
+  function switchMode(mode: GeneratedPageContentType) {
+    setContentType(mode);
+    setSourceMode("inline");
   }
 
   async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
@@ -99,7 +108,7 @@ export function CreateGeneratedPageForm({
     }
 
     const content = await file.text();
-    setImportedCode(content, isReact ? "react" : "html", file.name);
+    setImportedCode(content, isReact ? "react" : "html", file.name, "file");
   }
 
   async function pasteFromClipboard() {
@@ -113,7 +122,7 @@ export function CreateGeneratedPageForm({
       }
 
       const looksReact = /function\s+App\s*\(|export\s+default\s+function\s+App|import\s+React|from\s+["']react["']/.test(content);
-      setImportedCode(content, looksReact ? "react" : contentType, "Pegado desde portapapeles");
+      setImportedCode(content, looksReact ? "react" : contentType, "Pegado desde portapapeles", "inline");
     } catch {
       alert("No pude leer el portapapeles. En Android es más seguro subir el archivo .tsx o .html.");
     } finally {
@@ -131,11 +140,11 @@ export function CreateGeneratedPageForm({
             </div>
             <div>
               <h2 className="font-bold text-xl tracking-tight">Crear demo</h2>
-              <p className="text-muted-foreground text-sm">Para código largo, sube un archivo .tsx/.jsx/.html. El formulario guarda el código completo sin cargarlo entero en pantalla.</p>
+              <p className="text-muted-foreground text-sm">Para 10k+ líneas, sube el archivo. El servidor recibe el archivo completo sin depender del textarea móvil.</p>
             </div>
           </div>
 
-          <input ref={fileInputRef} type="file" accept=".html,.htm,.jsx,.tsx,.js,text/html" className="hidden" onChange={handleFileImport} />
+          <input ref={fileInputRef} name="sourceFile" type="file" accept=".html,.htm,.jsx,.tsx,.js,text/html" className="hidden" onChange={handleFileImport} />
           <div className="grid gap-2 sm:grid-cols-2 md:min-w-[360px]">
             <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={() => fileInputRef.current?.click()}>
               <Upload className="size-4" />
@@ -155,10 +164,17 @@ export function CreateGeneratedPageForm({
                   <div>
                     <p className="font-medium">{fileName || "Código cargado"}</p>
                     <p className="text-muted-foreground text-xs">
-                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : "HTML"}
+                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : "HTML"} · origen {sourceMode === "file" ? "archivo" : "inline"}
                     </p>
                   </div>
-                  <button type="button" onClick={() => setEditorOpen((value) => !value)} className="rounded-xl border bg-background px-3 py-2 font-medium text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSourceMode("inline");
+                      setEditorOpen((value) => !value);
+                    }}
+                    className="rounded-xl border bg-background px-3 py-2 font-medium text-xs"
+                  >
                     {editorOpen ? "Ocultar código" : "Editar código"}
                   </button>
                 </div>
@@ -166,15 +182,16 @@ export function CreateGeneratedPageForm({
             )}
 
             <input type="hidden" name="contentType" value={contentType} />
+            <input type="hidden" name="sourceMode" value={sourceMode} />
             <input type="hidden" name="prospectId" value={initialValues?.prospectId || ""} />
-            <input type="hidden" name="html" value={html} />
-            <input type="hidden" name="reactCode" value={reactCode} />
+            <input type="hidden" name="html" value={sourceMode === "file" ? "" : html} />
+            <input type="hidden" name="reactCode" value={sourceMode === "file" ? "" : reactCode} />
             <input type="hidden" name="css" value={css} />
 
             <div className="grid gap-2 rounded-2xl border bg-muted/20 p-2 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={() => setContentType("html")}
+                onClick={() => switchMode("html")}
                 className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
                   contentType === "html" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
                 }`}
@@ -183,7 +200,7 @@ export function CreateGeneratedPageForm({
               </button>
               <button
                 type="button"
-                onClick={() => setContentType("react")}
+                onClick={() => switchMode("react")}
                 className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
                   contentType === "react" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
                 }`}
@@ -220,17 +237,38 @@ export function CreateGeneratedPageForm({
               contentType === "html" ? (
                 <div className="space-y-2">
                   <label className="font-medium text-sm" htmlFor="htmlEditor">HTML completo</label>
-                  <Textarea id="htmlEditor" className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs" value={html} onChange={(event) => setHtml(event.target.value)} />
+                  <Textarea
+                    id="htmlEditor"
+                    className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs"
+                    value={html}
+                    onChange={(event) => {
+                      setSourceMode("inline");
+                      setHtml(event.target.value);
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="space-y-2">
                     <label className="font-medium text-sm" htmlFor="reactCodeEditor">Código React</label>
-                    <Textarea id="reactCodeEditor" className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs" value={reactCode} onChange={(event) => setReactCode(event.target.value)} />
+                    <Textarea
+                      id="reactCodeEditor"
+                      className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs"
+                      value={reactCode}
+                      onChange={(event) => {
+                        setSourceMode("inline");
+                        setReactCode(event.target.value);
+                      }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="font-medium text-sm" htmlFor="cssEditor">CSS opcional</label>
-                    <Textarea id="cssEditor" className="max-h-[240px] min-h-[110px] overflow-y-auto rounded-2xl font-mono text-xs" value={css} onChange={(event) => setCss(event.target.value)} />
+                    <Textarea
+                      id="cssEditor"
+                      className="max-h-[240px] min-h-[110px] overflow-y-auto rounded-2xl font-mono text-xs"
+                      value={css}
+                      onChange={(event) => setCss(event.target.value)}
+                    />
                   </div>
                 </div>
               )
@@ -238,11 +276,11 @@ export function CreateGeneratedPageForm({
               <div className="rounded-2xl border bg-muted/30 p-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="font-medium text-sm">Vista compacta del código</p>
-                  <span className="rounded-full bg-background px-2 py-1 text-muted-foreground text-xs">Completo guardado</span>
+                  <span className="rounded-full bg-background px-2 py-1 text-muted-foreground text-xs">{sourceMode === "file" ? "Se enviará como archivo" : "Inline"}</span>
                 </div>
                 <pre className="max-h-[240px] overflow-hidden whitespace-pre-wrap rounded-xl bg-background p-3 font-mono text-[11px] text-muted-foreground">
                   {getCodePreview(activeCode)}
-                  {activeStats.lines > 28 ? "\n\n... código completo cargado en memoria, usa Editar código para verlo ..." : ""}
+                  {activeStats.lines > 28 ? "\n\n... código completo cargado, usa Editar código solo si necesitas modificarlo ..." : ""}
                 </pre>
               </div>
             )}
