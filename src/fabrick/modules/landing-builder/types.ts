@@ -1,5 +1,5 @@
 export type GeneratedPageStatus = "draft" | "published" | "archived";
-export type GeneratedPageContentType = "html" | "react";
+export type GeneratedPageContentType = "html" | "html-app" | "react";
 
 export type GeneratedPage = {
   id: string;
