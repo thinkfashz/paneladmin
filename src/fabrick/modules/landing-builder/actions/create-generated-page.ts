@@ -49,7 +49,7 @@ export async function createGeneratedPageAction(formData: FormData): Promise<voi
     redirect("/admin/landing-builder?error=missing-title");
   }
 
-  if (contentType === "html" && !html) {
+  if ((contentType === "html" || contentType === "html-app") && !html) {
     redirect("/admin/landing-builder?error=invalid-html");
   }
 
