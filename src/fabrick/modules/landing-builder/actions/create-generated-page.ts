@@ -7,15 +7,43 @@ import { createGeneratedPage } from "../services/page-engine-service";
 import { attachLandingToProspect } from "../services/prospects-service";
 import type { GeneratedPageContentType } from "../types";
 
+async function readSourceFile(formData: FormData) {
+  const value = formData.get("sourceFile");
+
+  if (!value || typeof value === "string") return "";
+
+  const maybeFile = value as {
+    size?: number;
+    text?: () => Promise<string>;
+  };
+
+  if (!maybeFile.size || typeof maybeFile.text !== "function") return "";
+
+  return (await maybeFile.text()).trim();
+}
+
 export async function createGeneratedPageAction(formData: FormData): Promise<void> {
   const title = String(formData.get("title") || "").trim();
   const clientName = String(formData.get("clientName") || "").trim();
   const niche = String(formData.get("niche") || "").trim();
   const contentType = String(formData.get("contentType") || "html") as GeneratedPageContentType;
-  const html = String(formData.get("html") || "").trim();
-  const reactCode = String(formData.get("reactCode") || "").trim();
+  const sourceMode = String(formData.get("sourceMode") || "inline");
+  let html = String(formData.get("html") || "").trim();
+  let reactCode = String(formData.get("reactCode") || "").trim();
   const css = String(formData.get("css") || "").trim();
   const prospectId = String(formData.get("prospectId") || "").trim();
+
+  if (sourceMode === "file") {
+    const uploadedSource = await readSourceFile(formData);
+
+    if (uploadedSource) {
+      if (contentType === "react") {
+        reactCode = uploadedSource;
+      } else {
+        html = uploadedSource;
+      }
+    }
+  }
 
   if (!title) {
     redirect("/admin/landing-builder?error=missing-title");
