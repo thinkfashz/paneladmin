@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { createGeneratedPageAction } from "../actions/create-generated-page";
-import { demoLandingHtml, demoReactCode, demoReactCss } from "../data";
+import { demoHtmlApp, demoLandingHtml, demoReactCode, demoReactCss } from "../data";
+import { buildHtmlAppDocument } from "../services/html-app-engine";
 import { buildHtmlPreviewDocument, buildReactDemoHtml } from "../services/preview-engine";
 import type { GeneratedPageContentType } from "../types";
 
@@ -51,9 +52,9 @@ export function CreateGeneratedPageForm({
   };
 }) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [contentType, setContentType] = useState<GeneratedPageContentType>("html");
+  const [contentType, setContentType] = useState<GeneratedPageContentType>("html-app");
   const [sourceMode, setSourceMode] = useState<SourceMode>("inline");
-  const [html, setHtml] = useState(demoLandingHtml);
+  const [html, setHtml] = useState(demoHtmlApp);
   const [reactCode, setReactCode] = useState(demoReactCode);
   const [css, setCss] = useState(demoReactCss);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -65,6 +66,7 @@ export function CreateGeneratedPageForm({
 
   const previewHtml = useMemo(() => {
     if (contentType === "react") return buildReactDemoHtml(reactCode, css);
+    if (contentType === "html-app") return buildHtmlAppDocument(html);
     return buildHtmlPreviewDocument(html);
   }, [contentType, html, reactCode, css]);
 
@@ -85,6 +87,14 @@ export function CreateGeneratedPageForm({
   function switchMode(mode: GeneratedPageContentType) {
     setContentType(mode);
     setSourceMode("inline");
+
+    if (mode === "html-app" && html === demoLandingHtml) {
+      setHtml(demoHtmlApp);
+    }
+
+    if (mode === "html" && html === demoHtmlApp) {
+      setHtml(demoLandingHtml);
+    }
   }
 
   async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
@@ -108,7 +118,8 @@ export function CreateGeneratedPageForm({
     }
 
     const content = await file.text();
-    setImportedCode(content, isReact ? "react" : "html", file.name, "file");
+    const htmlMode = contentType === "html-app" ? "html-app" : "html";
+    setImportedCode(content, isReact ? "react" : htmlMode, file.name, "file");
   }
 
   async function pasteFromClipboard() {
@@ -122,7 +133,8 @@ export function CreateGeneratedPageForm({
       }
 
       const looksReact = /function\s+App\s*\(|export\s+default\s+function\s+App|import\s+React|from\s+["']react["']/.test(content);
-      setImportedCode(content, looksReact ? "react" : contentType, "Pegado desde portapapeles", "inline");
+      const htmlMode = contentType === "html-app" ? "html-app" : "html";
+      setImportedCode(content, looksReact ? "react" : htmlMode, "Pegado desde portapapeles", "inline");
     } catch {
       alert("No pude leer el portapapeles. En Android es más seguro subir el archivo .tsx o .html.");
     } finally {
@@ -140,7 +152,7 @@ export function CreateGeneratedPageForm({
             </div>
             <div>
               <h2 className="font-bold text-xl tracking-tight">Crear demo</h2>
-              <p className="text-muted-foreground text-sm">Para 10k+ líneas, sube el archivo. El servidor recibe el archivo completo sin depender del textarea móvil.</p>
+              <p className="text-muted-foreground text-sm">HTML App es el modo recomendado para demos livianas con pantallas internas, botones, WhatsApp, modales y cálculos.</p>
             </div>
           </div>
 
@@ -164,7 +176,7 @@ export function CreateGeneratedPageForm({
                   <div>
                     <p className="font-medium">{fileName || "Código cargado"}</p>
                     <p className="text-muted-foreground text-xs">
-                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : "HTML"} · origen {sourceMode === "file" ? "archivo" : "inline"}
+                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : contentType === "html-app" ? "HTML App" : "HTML"} · origen {sourceMode === "file" ? "archivo" : "inline"}
                     </p>
                   </div>
                   <button
@@ -188,7 +200,16 @@ export function CreateGeneratedPageForm({
             <input type="hidden" name="reactCode" value={sourceMode === "file" ? "" : reactCode} />
             <input type="hidden" name="css" value={css} />
 
-            <div className="grid gap-2 rounded-2xl border bg-muted/20 p-2 sm:grid-cols-2">
+            <div className="grid gap-2 rounded-2xl border bg-muted/20 p-2 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => switchMode("html-app")}
+                className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
+                  contentType === "html-app" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
+                }`}
+              >
+                HTML App
+              </button>
               <button
                 type="button"
                 onClick={() => switchMode("html")}
@@ -234,7 +255,7 @@ export function CreateGeneratedPageForm({
             </div>
 
             {editorOpen ? (
-              contentType === "html" ? (
+              contentType !== "react" ? (
                 <div className="space-y-2">
                   <label className="font-medium text-sm" htmlFor="htmlEditor">HTML completo</label>
                   <Textarea
@@ -313,7 +334,7 @@ export function CreateGeneratedPageForm({
               <div className="absolute left-1/2 top-4 z-30 h-1.5 w-14 -translate-x-1/2 rounded-full bg-neutral-700" />
               <div className="flex h-full w-full flex-col overflow-hidden rounded-[2.25rem] border border-white/10 bg-white">
                 <div className="flex h-11 shrink-0 items-center justify-between border-b bg-neutral-950 px-5 text-[11px] text-white">
-                  <span>{contentType === "react" ? "React Demo" : "HTML Preview"}</span>
+                  <span>{contentType === "react" ? "React Demo" : contentType === "html-app" ? "HTML App" : "HTML Preview"}</span>
                   <span className="inline-flex items-center gap-1"><Eye className="size-3" /> Live</span>
                 </div>
                 <iframe
