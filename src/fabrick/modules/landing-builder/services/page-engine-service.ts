@@ -1,8 +1,8 @@
-import { randomBytes } from "crypto";
-
 import type { GeneratedPage, GeneratedPageContentType } from "../types";
+import { buildHtmlAppDocument } from "./html-app-engine";
 import { buildHtmlPreviewDocument, buildReactDemoHtml } from "./preview-engine";
 
+export { buildHtmlAppDocument } from "./html-app-engine";
 export { buildHtmlPreviewDocument, buildReactDemoHtml } from "./preview-engine";
 
 function normalizeUrl(value: string) {
@@ -91,7 +91,17 @@ async function runInsForgeSql(query: string) {
 }
 
 export function createPublicToken() {
-  return randomBytes(8).toString("hex");
+  const bytes = new Uint8Array(8);
+
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export async function ensureGeneratedPagesTable() {
@@ -138,7 +148,9 @@ export async function createGeneratedPage(input: {
   const html =
     input.contentType === "react"
       ? buildReactDemoHtml(input.reactCode || "", input.css || "")
-      : buildHtmlPreviewDocument(input.html || "");
+      : input.contentType === "html-app"
+        ? buildHtmlAppDocument(input.html || "")
+        : buildHtmlPreviewDocument(input.html || "");
 
   const query = `
     insert into public.generated_pages (
