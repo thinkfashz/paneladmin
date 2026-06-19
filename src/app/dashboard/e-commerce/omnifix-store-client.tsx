@@ -39,10 +39,15 @@ type Product = {
   badge: string;
   description: string;
   icon: "phone" | "laptop" | "audio" | "cpu" | "service" | "smart";
+  image: string;
+  accent: string;
   rating: number;
 };
 
 const categories: Category[] = ["Todos", "Celulares", "Computadores", "Audio", "Smart Home", "Servicio"];
+
+const imageUrl = (id: string, query = "electronics") =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=88&ixlib=rb-4.0.3&${query}`;
 
 const products: Product[] = [
   {
@@ -54,6 +59,8 @@ const products: Product[] = [
     badge: "Más vendido",
     description: "Diagnóstico, batería premium y calibración de salud.",
     icon: "phone",
+    image: imageUrl("photo-1511707171634-5f897ff02aa9", "phone"),
+    accent: "#0057ff",
     rating: 4.9,
   },
   {
@@ -64,6 +71,8 @@ const products: Product[] = [
     badge: "Express",
     description: "Pantalla lista para instalación con prueba táctil.",
     icon: "smart",
+    image: imageUrl("photo-1598327105666-5b89351aff97", "smartphone"),
+    accent: "#12b5ff",
     rating: 4.8,
   },
   {
@@ -75,6 +84,8 @@ const products: Product[] = [
     badge: "24h",
     description: "Limpieza interna, pasta térmica y optimización.",
     icon: "laptop",
+    image: imageUrl("photo-1496181133206-80ce9b88a853", "laptop"),
+    accent: "#0f172a",
     rating: 4.9,
   },
   {
@@ -85,6 +96,8 @@ const products: Product[] = [
     badge: "Rápido",
     description: "SSD 480GB, migración básica y entrega lista para usar.",
     icon: "cpu",
+    image: imageUrl("photo-1518770660439-4636190af475", "circuit"),
+    accent: "#2563eb",
     rating: 4.7,
   },
   {
@@ -96,6 +109,8 @@ const products: Product[] = [
     badge: "Nuevo",
     description: "Audio inalámbrico, batería extendida y carga rápida.",
     icon: "audio",
+    image: imageUrl("photo-1505740420928-5e560c06d30e", "headphones"),
+    accent: "#334155",
     rating: 4.6,
   },
   {
@@ -106,6 +121,8 @@ const products: Product[] = [
     badge: "Pack",
     description: "Ampolletas, enchufe inteligente y configuración inicial.",
     icon: "smart",
+    image: imageUrl("photo-1558002038-1055907df827", "smart-home"),
+    accent: "#0284c7",
     rating: 4.8,
   },
   {
@@ -116,6 +133,8 @@ const products: Product[] = [
     badge: "Recuperable",
     description: "Revisión, informe y descuento si aceptas reparación.",
     icon: "service",
+    image: imageUrl("photo-1581092160562-40aa08e78837", "technician"),
+    accent: "#111827",
     rating: 5,
   },
   {
@@ -126,6 +145,8 @@ const products: Product[] = [
     badge: "Seguro",
     description: "Respaldo de archivos, fotos y preparación del equipo.",
     icon: "cpu",
+    image: imageUrl("photo-1558494949-ef010cbdcc31", "server"),
+    accent: "#1d4ed8",
     rating: 4.9,
   },
 ];
@@ -176,16 +197,35 @@ function OmnifixLogo({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function ProductImage({ product, compact = false }: { product: Product; compact?: boolean }) {
+  const Icon = iconMap[product.icon];
+
+  return (
+    <div
+      className={styles.realProductImage}
+      style={{
+        minHeight: compact ? 74 : undefined,
+        borderRadius: compact ? 18 : undefined,
+        background: `linear-gradient(135deg, ${product.accent}, #020817)`,
+      }}
+    >
+      <img src={product.image} alt={product.name} loading="lazy" />
+      <span className={styles.imageIcon}><Icon /></span>
+    </div>
+  );
+}
+
 export default function OmnifixStoreClient() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<Category>("Todos");
+  const [selectedProduct, setSelectedProduct] = useState<Product>(products[0]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 1700);
+    const timer = window.setTimeout(() => setLoading(false), 1500);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -225,6 +265,11 @@ export default function OmnifixStoreClient() {
     setCartOpen(true);
   }
 
+  function selectProduct(product: Product) {
+    setSelectedProduct(product);
+    document.getElementById("detalle")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
   function removeFromCart(productId: string) {
     setCart((current) => {
       const next = { ...current };
@@ -248,7 +293,7 @@ export default function OmnifixStoreClient() {
   function sendWhatsapp() {
     const lines = cartItems.length
       ? cartItems.map((item) => `• ${item.name} x${item.quantity} — ${formatCurrency(item.subtotal)}`).join("\n")
-      : "Quiero cotizar productos y servicios Omnifix.";
+      : `Quiero cotizar ${selectedProduct.name} en Omnifix.`;
 
     const message = encodeURIComponent(
       `Hola Omnifix, quiero cotizar:\n${lines}\n\nTotal referencial: ${formatCurrency(cartTotal)}`,
@@ -266,11 +311,13 @@ export default function OmnifixStoreClient() {
           <div className={styles.loaderBar}>
             <span />
           </div>
-          <p>Preparando tienda inteligente Omnifix...</p>
+          <p>Preparando vitrina web Omnifix...</p>
         </div>
       </main>
     );
   }
+
+  const SelectedIcon = iconMap[selectedProduct.icon];
 
   return (
     <main className={styles.page}>
@@ -286,8 +333,8 @@ export default function OmnifixStoreClient() {
 
           <nav className={styles.desktopNav}>
             <a href="#productos">Productos</a>
-            <a href="#servicios">Servicios</a>
-            <a href="#tienda">Tienda</a>
+            <a href="#detalle">Detalle</a>
+            <a href="#tienda">Vitrina</a>
             <a href="#soporte">Soporte</a>
           </nav>
 
@@ -305,8 +352,8 @@ export default function OmnifixStoreClient() {
         {menuOpen && (
           <div className={styles.mobileNav}>
             <a href="#productos" onClick={() => setMenuOpen(false)}>Productos</a>
-            <a href="#servicios" onClick={() => setMenuOpen(false)}>Servicios</a>
-            <a href="#tienda" onClick={() => setMenuOpen(false)}>Tienda</a>
+            <a href="#detalle" onClick={() => setMenuOpen(false)}>Detalle</a>
+            <a href="#tienda" onClick={() => setMenuOpen(false)}>Vitrina</a>
             <a href="#soporte" onClick={() => setMenuOpen(false)}>Soporte</a>
           </div>
         )}
@@ -314,46 +361,32 @@ export default function OmnifixStoreClient() {
         <div className={styles.heroGrid}>
           <div className={styles.heroCopy}>
             <span className={styles.kicker}>
-              <Sparkles /> Nueva experiencia de compra técnica
+              <Sparkles /> Vitrina web interactiva
             </span>
-            <h1>La tienda Omnifix para comprar, cotizar y reparar desde tu celular.</h1>
+            <h1>Compra, cotiza y agenda servicios técnicos desde una tienda visual.</h1>
             <p>
-              Un frontend premium para tu aplicación: productos de prueba, carrito funcional,
-              búsqueda, categorías, animación inicial y contacto directo por WhatsApp.
+              Una vitrina responsive con productos seleccionables, imágenes reales, carrito, detalle de producto y cotización por WhatsApp.
             </p>
 
             <div className={styles.heroButtons}>
               <a href="#productos" className={styles.primaryCta}>
                 Ver productos <ArrowRight />
               </a>
-              <button type="button" className={styles.secondaryCta} onClick={sendWhatsapp}>
-                <Phone /> Cotizar por WhatsApp
+              <button type="button" className={styles.secondaryCta} onClick={() => addToCart(selectedProduct.id)}>
+                <ShoppingBag /> Agregar destacado
               </button>
             </div>
 
             <div className={styles.trustRow}>
               <span><ShieldCheck /> Garantía técnica</span>
-              <span><PackageCheck /> Retiro y entrega</span>
+              <span><PackageCheck /> Stock referencial</span>
               <span><BatteryCharging /> Diagnóstico rápido</span>
             </div>
           </div>
 
           <div className={styles.heroVisual} id="tienda">
             <div className={styles.referenceCard}>
-              <div className={styles.phoneMockup} style={{ position: "relative", inset: "auto", width: "100%", minHeight: 520 }}>
-                <div className={styles.phoneHeader}>
-                  <button type="button">‹</button>
-                  <span>Store</span>
-                  <Search />
-                </div>
-                <div className={styles.phoneBanner}>
-                  <div>
-                    <span>Omnifix Care</span>
-                    <strong>Repara, compra y agenda.</strong>
-                  </div>
-                  <Smartphone />
-                </div>
-              </div>
+              <ProductImage product={selectedProduct} />
             </div>
 
             <div className={styles.phoneMockup}>
@@ -365,10 +398,10 @@ export default function OmnifixStoreClient() {
 
               <div className={styles.phoneBanner}>
                 <div>
-                  <span>Omnifix Care</span>
-                  <strong>Repara, compra y agenda.</strong>
+                  <span>{selectedProduct.category}</span>
+                  <strong>{selectedProduct.name}</strong>
                 </div>
-                <Smartphone />
+                <SelectedIcon />
               </div>
 
               <div className={styles.phoneSearch}>
@@ -377,16 +410,13 @@ export default function OmnifixStoreClient() {
               </div>
 
               <div className={styles.phoneProducts}>
-                {products.slice(0, 3).map((product) => {
-                  const Icon = iconMap[product.icon];
-                  return (
-                    <article key={product.id} className={styles.phoneProduct}>
-                      <Icon />
-                      <strong>{product.name}</strong>
-                      <span>{formatCurrency(product.price)}</span>
-                    </article>
-                  );
-                })}
+                {products.slice(0, 3).map((product) => (
+                  <button key={product.id} type="button" className={styles.phoneProduct} onClick={() => selectProduct(product)}>
+                    <ProductImage product={product} compact />
+                    <strong>{product.name}</strong>
+                    <span>{formatCurrency(product.price)}</span>
+                  </button>
+                ))}
               </div>
 
               <div className={styles.phoneBottom}>
@@ -400,48 +430,40 @@ export default function OmnifixStoreClient() {
         </div>
       </section>
 
-      <section className={styles.darkFeature}>
+      <section id="detalle" className={styles.darkFeature}>
         <div className={styles.darkCopy}>
-          <span className={styles.kicker}>Interfaz mobile first</span>
-          <h2>Diseñada como una app moderna, pero lista dentro de tu dashboard.</h2>
-          <p>Tarjetas flotantes, catálogo vertical, búsqueda y navegación inferior inspirada en tus referencias.</p>
+          <span className={styles.kicker}>Producto seleccionado</span>
+          <h2>{selectedProduct.name}</h2>
+          <p>{selectedProduct.description}</p>
+          <div className={styles.heroButtons}>
+            <button type="button" className={styles.primaryCta} onClick={() => addToCart(selectedProduct.id)}>
+              <ShoppingBag /> Agregar al carrito
+            </button>
+            <button type="button" className={styles.secondaryCta} onClick={sendWhatsapp}>
+              <Phone /> Cotizar
+            </button>
+          </div>
         </div>
-        <div className={styles.phoneMockup} style={{ position: "relative", inset: "auto", margin: "0 auto", background: "#161a22", color: "#fff" }}>
-          <div className={styles.phoneHeader}>
-            <button type="button">☰</button>
-            <span>OmniStore</span>
+        <div className={styles.detailPhone} style={{ background: `linear-gradient(160deg, ${selectedProduct.accent}, #111827)` }}>
+          <div className={styles.detailTop}>
+            <button type="button">‹</button>
+            <span>Product</span>
             <ShoppingBag />
           </div>
-          <div className={styles.phoneSearch} style={{ background: "#252b36", color: "#94a3b8" }}>
-            <Search />
-            <span>Search your fix</span>
+          <ProductImage product={selectedProduct} />
+          <div className={styles.detailInfo}>
+            <span>{selectedProduct.category}</span>
+            <h3>{selectedProduct.name}</h3>
+            <strong>{formatCurrency(selectedProduct.price)}</strong>
+            <p>{selectedProduct.description}</p>
           </div>
-          <div className={styles.categories} style={{ margin: "16px 0" }}>
-            <button className={styles.categoryActive}>All</button>
-            <button>iPhone</button>
-            <button>Audio</button>
-          </div>
-          {products.slice(0, 3).map((product) => {
-            const Icon = iconMap[product.icon];
-            return (
-              <article key={product.id} className={styles.productCard} style={{ minHeight: 122, marginBottom: 12, background: "#222833", color: "#fff" }}>
-                <div className={styles.productFooter}>
-                  <div>
-                    <strong>{product.name}</strong>
-                    <small style={{ textDecoration: "none" }}>{product.category}</small>
-                  </div>
-                  <Icon style={{ width: 58, height: 58, color: "#38bdf8" }} />
-                </div>
-              </article>
-            );
-          })}
         </div>
       </section>
 
       <section id="productos" className={styles.productsSection}>
         <div className={styles.sectionHeader}>
           <div>
-            <span className={styles.kicker}>Catálogo de prueba</span>
+            <span className={styles.kicker}>Catálogo visual</span>
             <h2>Productos y servicios destacados</h2>
           </div>
           <div className={styles.searchBox}>
@@ -464,38 +486,37 @@ export default function OmnifixStoreClient() {
         </div>
 
         <div className={styles.productGrid}>
-          {filteredProducts.map((product) => {
-            const Icon = iconMap[product.icon];
-            return (
-              <article key={product.id} className={styles.productCard}>
-                <div className={styles.productTop}>
-                  <span className={styles.productBadge}>{product.badge}</span>
-                  <span className={styles.rating}><Star /> {product.rating}</span>
+          {filteredProducts.map((product) => (
+            <article key={product.id} className={styles.productCard}>
+              <button type="button" className={styles.productSelect} onClick={() => selectProduct(product)} aria-label={`Seleccionar ${product.name}`}>
+                <ProductImage product={product} />
+              </button>
+              <div className={styles.productTop}>
+                <span className={styles.productBadge}>{product.badge}</span>
+                <span className={styles.rating}><Star /> {product.rating}</span>
+              </div>
+              <div className={styles.productBody}>
+                <span>{product.category}</span>
+                <h3>{product.name}</h3>
+                <p>{product.description}</p>
+              </div>
+              <div className={styles.productFooter}>
+                <div>
+                  <strong>{formatCurrency(product.price)}</strong>
+                  {product.oldPrice && <small>{formatCurrency(product.oldPrice)}</small>}
                 </div>
-                <div className={styles.productImage}><Icon /></div>
-                <div className={styles.productBody}>
-                  <span>{product.category}</span>
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                </div>
-                <div className={styles.productFooter}>
-                  <div>
-                    <strong>{formatCurrency(product.price)}</strong>
-                    {product.oldPrice && <small>{formatCurrency(product.oldPrice)}</small>}
-                  </div>
-                  <button type="button" onClick={() => addToCart(product.id)}>
-                    <Plus /> Agregar
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+                <button type="button" onClick={() => addToCart(product.id)}>
+                  <Plus /> Agregar
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
       <section id="servicios" className={styles.services}>
         {[
-          ["Diagnóstico inteligente", "El cliente revisa productos, servicios y precios referenciales antes de escribir."],
+          ["Selección inmediata", "Toca cualquier producto y se actualiza el detalle principal de la vitrina."],
           ["Carrito funcional", "Agrega, suma, resta y prepara un mensaje de WhatsApp con el pedido."],
           ["Listo para conectar", "Después se puede conectar a InsForge, PocketBase, Stripe o Transbank."],
         ].map(([title, description]) => (
@@ -529,6 +550,7 @@ export default function OmnifixStoreClient() {
         <div className={styles.cartItems}>
           {cartItems.length ? cartItems.map((item) => (
             <article key={item.id} className={styles.cartItem}>
+              <ProductImage product={item} compact />
               <div><strong>{item.name}</strong><span>{formatCurrency(item.price)} c/u</span></div>
               <div className={styles.quantity}>
                 <button type="button" onClick={() => changeQuantity(item.id, -1)}><Minus /></button>
