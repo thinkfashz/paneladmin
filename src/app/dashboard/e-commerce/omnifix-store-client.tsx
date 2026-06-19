@@ -160,6 +160,17 @@ const iconMap = {
   smart: TabletSmartphone,
 };
 
+const imageWrapStyle = (product: Product, compact = false): React.CSSProperties => ({
+  position: "relative",
+  minHeight: compact ? 74 : 158,
+  borderRadius: compact ? 18 : 28,
+  overflow: "hidden",
+  display: "grid",
+  placeItems: "center",
+  background: `linear-gradient(135deg, ${product.accent}, #020817)`,
+  boxShadow: compact ? "0 10px 30px rgba(15,23,42,.18)" : "0 24px 70px rgba(15,23,42,.2)",
+});
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-CL", {
     style: "currency",
@@ -201,16 +212,40 @@ function ProductImage({ product, compact = false }: { product: Product; compact?
   const Icon = iconMap[product.icon];
 
   return (
-    <div
-      className={styles.realProductImage}
-      style={{
-        minHeight: compact ? 74 : undefined,
-        borderRadius: compact ? 18 : undefined,
-        background: `linear-gradient(135deg, ${product.accent}, #020817)`,
-      }}
-    >
-      <img src={product.image} alt={product.name} loading="lazy" />
-      <span className={styles.imageIcon}><Icon /></span>
+    <div style={imageWrapStyle(product, compact)}>
+      <img
+        src={product.image}
+        alt={product.name}
+        loading="lazy"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: 0.88,
+          transform: compact ? "scale(1.04)" : "scale(1.02)",
+          filter: "saturate(1.08) contrast(1.04)",
+        }}
+      />
+      <span
+        style={{
+          position: "absolute",
+          right: compact ? 8 : 14,
+          bottom: compact ? 8 : 14,
+          width: compact ? 30 : 46,
+          height: compact ? 30 : 46,
+          display: "grid",
+          placeItems: "center",
+          borderRadius: compact ? 12 : 18,
+          color: "#fff",
+          background: "rgba(2,6,23,.72)",
+          border: "1px solid rgba(255,255,255,.18)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <Icon style={{ width: compact ? 16 : 24, height: compact ? 16 : 24 }} />
+      </span>
     </div>
   );
 }
@@ -444,18 +479,29 @@ export default function OmnifixStoreClient() {
             </button>
           </div>
         </div>
-        <div className={styles.detailPhone} style={{ background: `linear-gradient(160deg, ${selectedProduct.accent}, #111827)` }}>
-          <div className={styles.detailTop}>
-            <button type="button">‹</button>
-            <span>Product</span>
-            <ShoppingBag />
+        <div
+          style={{
+            width: "min(100%, 420px)",
+            margin: "0 auto",
+            borderRadius: 42,
+            padding: 22,
+            minHeight: 590,
+            color: "#fff",
+            background: `linear-gradient(160deg, ${selectedProduct.accent}, #111827)`,
+            boxShadow: "0 45px 120px rgba(0,0,0,.35)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+            <button type="button" style={{ width: 44, height: 44, border: 0, borderRadius: 16, background: "rgba(255,255,255,.14)", color: "#fff" }}>‹</button>
+            <span style={{ fontWeight: 950 }}>Product</span>
+            <ShoppingBag style={{ width: 22, height: 22 }} />
           </div>
           <ProductImage product={selectedProduct} />
-          <div className={styles.detailInfo}>
-            <span>{selectedProduct.category}</span>
-            <h3>{selectedProduct.name}</h3>
-            <strong>{formatCurrency(selectedProduct.price)}</strong>
-            <p>{selectedProduct.description}</p>
+          <div style={{ marginTop: 24, borderRadius: 30, padding: 22, background: "rgba(2,6,23,.42)", border: "1px solid rgba(255,255,255,.12)", backdropFilter: "blur(14px)" }}>
+            <span style={{ color: "#bae6fd", fontSize: 12, textTransform: "uppercase", letterSpacing: ".16em", fontWeight: 900 }}>{selectedProduct.category}</span>
+            <h3 style={{ margin: "10px 0 0", fontSize: 30, lineHeight: 1, letterSpacing: "-.05em" }}>{selectedProduct.name}</h3>
+            <strong style={{ display: "block", marginTop: 14, fontSize: 34 }}>{formatCurrency(selectedProduct.price)}</strong>
+            <p style={{ color: "#dbeafe", lineHeight: 1.65 }}>{selectedProduct.description}</p>
           </div>
         </div>
       </section>
@@ -488,7 +534,12 @@ export default function OmnifixStoreClient() {
         <div className={styles.productGrid}>
           {filteredProducts.map((product) => (
             <article key={product.id} className={styles.productCard}>
-              <button type="button" className={styles.productSelect} onClick={() => selectProduct(product)} aria-label={`Seleccionar ${product.name}`}>
+              <button
+                type="button"
+                onClick={() => selectProduct(product)}
+                aria-label={`Seleccionar ${product.name}`}
+                style={{ appearance: "none", border: 0, background: "transparent", padding: 0, width: "100%", cursor: "pointer" }}
+              >
                 <ProductImage product={product} />
               </button>
               <div className={styles.productTop}>
