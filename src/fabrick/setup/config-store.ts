@@ -5,6 +5,7 @@
 
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 export type RuntimeConfig = {
@@ -17,7 +18,7 @@ export type RuntimeConfig = {
   configuredAt: string;
 };
 
-const CONFIG_DIR = path.join(process.cwd(), ".fabrick");
+const CONFIG_DIR = path.join(process.env.VERCEL === "1" ? tmpdir() : process.cwd(), ".fabrick");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.enc");
 const KEY_FILE = path.join(CONFIG_DIR, "config.key");
 const LOCK_FILE = path.join(CONFIG_DIR, "setup.lock");
