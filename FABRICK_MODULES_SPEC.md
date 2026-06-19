@@ -136,3 +136,17 @@ Se corrigió `src/fabrick/auth/provider.ts` para detectar InsForge con las varia
 - `INSFORGE_ANON_KEY`
 
 También se corrigió `src/fabrick/auth/adapters/insforge-auth-adapter.ts` para validar sesiones sin exigir `INSFORGE_PROJECT_ID`.
+
+## Page Engine MVP
+
+Se añadió el primer motor real de páginas:
+
+- Tabla `generated_pages`.
+- Formulario para guardar HTML completo.
+- Token público.
+- Ruta pública `/p/[token]`.
+- Render seguro mediante `iframe srcDoc`.
+- Lista de páginas recientes.
+
+Regla:
+El HTML se guarda como string en base de datos. En fases futuras se separará por bloques, plantillas, clientes y estadísticas.
