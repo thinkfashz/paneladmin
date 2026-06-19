@@ -1,0 +1,87 @@
+# CHANGELOG — Landing Builder
+
+## MVP Page Engine
+
+- Se creó tabla `generated_pages`.
+- Se agregó formulario para guardar HTML real.
+- Se agregó token público.
+- Se agregó ruta pública `/p/[token]`.
+- Se agregó preview público con iframe.
+
+## Importador HTML + preview móvil
+
+- Se añadió botón `Importar HTML`.
+- Se permite cargar archivos `.html` o `.htm`.
+- El contenido importado se inserta automáticamente en el editor.
+- Se añadió preview en vivo dentro de un marco móvil tipo iPhone.
+- El preview usa `iframe srcDoc` para mostrar el HTML antes de guardarlo.
+
+## ContainerScroll para visor HTML
+
+- Se añadió `components/container-scroll.tsx`.
+- Se instaló `framer-motion`.
+- Se reemplazó el visor móvil estático por un visor animado con scroll y perspectiva.
+- El HTML importado o editado se muestra dentro del nuevo visor.
+
+## Botones premium
+
+- Se actualizó el componente global `Button`.
+- Se añadieron `LiquidButton` y `MetalButton`.
+- Se aplicó `MetalButton` al importador HTML y al botón de guardar del Page Engine.
+
+## Fix dependencia Slot
+
+- Se añadió `@radix-ui/react-slot` porque el componente global `Button` usa `Slot` para soportar `asChild`.
+
+## Fix compatibilidad Button size
+
+- Se añadieron tamaños `xs`, `xl`, `icon-xs`, `icon-sm` e `icon-lg`.
+- Esto mantiene compatibilidad con componentes existentes del dashboard original.
+
+## React Demo compartible
+
+- Se añadió modo `React Demo`.
+- Se permite pegar código React tipo `function App()`.
+- Se permite importar `.jsx`, `.tsx` o `.js`.
+- El sistema genera un HTML ejecutable con React, ReactDOM, Babel y Tailwind desde CDN.
+- Se guarda el código React y CSS en `generated_pages`.
+- El link público `/p/[token]` puede mostrar demos React aisladas en iframe.
+
+## Soporte inicial para componentes avanzados
+
+- Se instaló `cobe`.
+- Se añadió `Globe` como componente interno revisado.
+- Se añadió `GlobeDemo`.
+- Se añadió ruta `/admin/landing-builder/globe-demo`.
+- Se documentó que TSX con imports externos requiere Vite Builder/Sandbox para ejecución arbitraria segura.
+
+## Fix TypeScript Globe
+
+- Se reemplazó `@ts-expect-error` por `@ts-ignore` para CSS Anchor Positioning.
+- Esto evita error de TypeScript por directiva no usada en Vercel.
+
+## Fix TypeScript Globe
+
+- Se reemplazó `@ts-expect-error` por `@ts-ignore` para CSS Anchor Positioning.
+- Esto evita error de TypeScript por directiva no usada en Vercel.
+
+## Fix completo TypeScript Globe
+
+- Se reemplazaron todas las directivas `@ts-expect-error` restantes por `@ts-ignore`.
+- Esto evita fallos de build por directivas no usadas en CSS Anchor Positioning.
+
+## CRM de prospectos con importación JSON
+
+- Se añadió importador de archivos JSON para prospectos.
+- Se extraen datos: marca, proyecto, seguidores, redes, número, correo, sitio web y paleta.
+- Se añadió lista moderna de prospectos.
+- Se añadió card moderna de detalles.
+- Se añadió botón para crear landing desde un prospecto.
+- Al guardar una página desde un prospecto, se asocia el token/link al CRM.
+
+## Metadata WhatsApp / Open Graph para demos
+
+- Se añadió metadata dinámica en `/p/[token]`.
+- El título, descripción e imagen social usan datos del prospecto asociado.
+- Se añadió imagen Open Graph dinámica con iniciales de la marca y paleta de colores.
+- WhatsApp, Facebook, Telegram y X pueden mostrar preview enriquecido al compartir el link.

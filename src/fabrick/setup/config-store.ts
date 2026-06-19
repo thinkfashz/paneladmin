@@ -1,10 +1,11 @@
 // Almacen de configuracion runtime del panel (solo servidor).
 // Guarda credenciales ingresadas en el asistente de primer inicio,
-// cifradas con AES-256-GCM en .fabrick/config.enc. Las variables de
-// entorno reales SIEMPRE tienen prioridad sobre lo guardado aqui.
+// cifradas con AES-256-GCM. En Vercel/serverless usa /tmp porque
+// /var/task es de solo lectura. Las variables de entorno siempre tienen prioridad.
 
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 export type RuntimeConfig = {
@@ -17,7 +18,8 @@ export type RuntimeConfig = {
   configuredAt: string;
 };
 
-const CONFIG_DIR = path.join(process.cwd(), ".fabrick");
+const IS_SERVERLESS = process.env.VERCEL === "1" || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+const CONFIG_DIR = process.env.FABRICK_CONFIG_DIR || path.join(IS_SERVERLESS ? tmpdir() : process.cwd(), ".fabrick");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.enc");
 const KEY_FILE = path.join(CONFIG_DIR, "config.key");
 const LOCK_FILE = path.join(CONFIG_DIR, "setup.lock");
@@ -124,12 +126,21 @@ export function hasSetupLock(): boolean {
 // Si el usuario ya configuro todo via variables de entorno (sus "secretos"),
 // el asistente no es necesario: se considera la app como configurada.
 export function hasFullEnvConfig(): boolean {
-  return Boolean(
+  const hasSupabaseEnv = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
       process.env.SUPABASE_SERVICE_ROLE_KEY &&
       process.env.ACCESS_LOG_SECRET,
   );
+
+  const hasInsForgeEnv = Boolean(
+    (process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.INSFORGE_API_URL || process.env.INSFORGE_BASE_URL) &&
+      (process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || process.env.INSFORGE_ANON_KEY) &&
+      (process.env.INSFORGE_SERVICE_ROLE_KEY || process.env.INSFORGE_API_KEY) &&
+      process.env.ACCESS_LOG_SECRET,
+  );
+
+  return hasSupabaseEnv || hasInsForgeEnv;
 }
 
 export function isSetupComplete(): boolean {
@@ -139,7 +150,13 @@ export function isSetupComplete(): boolean {
 // Candado: el asistente solo corre si nunca se completo, o si el dueno
 // lo fuerza explicitamente con FABRICK_SETUP_FORCE=true en su entorno.
 export function canRunSetup(): boolean {
-  if (process.env.FABRICK_SETUP_FORCE === "true") return true;
+  // En Vercel, las variables de entorno deben tener prioridad.
+  // Si Supabase o InsForge están completos, no mostramos setup aunque haya quedado FABRICK_SETUP_FORCE=true.
+  if (hasFullEnvConfig()) return false;
+
+  // Para forzar setup manualmente desde ahora usar FABRICK_SETUP_FORCE=reset.
+  if (process.env.FABRICK_SETUP_FORCE === "reset") return true;
+
   return !isSetupComplete();
 }
 

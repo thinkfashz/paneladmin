@@ -1,0 +1,353 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+
+import { Code2, Eye, Rocket, Smartphone, Upload } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+import { createGeneratedPageAction } from "../actions/create-generated-page";
+import { demoHtmlApp, demoLandingHtml, demoReactCode, demoReactCss } from "../data";
+import { buildHtmlAppDocument } from "../services/html-app-engine";
+import { buildHtmlPreviewDocument, buildReactDemoHtml } from "../services/preview-engine";
+import type { GeneratedPageContentType } from "../types";
+
+const businessTypes = [
+  "Producción Audiovisual",
+  "Clínica Dental",
+  "Óptica",
+  "Belleza y estética",
+  "Restaurante / Cafetería",
+  "Construcción",
+  "Tienda / E-commerce",
+  "Servicio profesional",
+  "Negocio local",
+];
+
+type SourceMode = "inline" | "file";
+
+function getCodeStats(value: string) {
+  const safe = value || "";
+  return {
+    chars: safe.length,
+    lines: safe ? safe.split(/\r\n|\r|\n/).length : 0,
+  };
+}
+
+function getCodePreview(value: string) {
+  const lines = (value || "").split(/\r\n|\r|\n/);
+  return lines.slice(0, 28).join("\n");
+}
+
+export function CreateGeneratedPageForm({
+  initialValues,
+}: {
+  initialValues?: {
+    title?: string;
+    clientName?: string;
+    niche?: string;
+    prospectId?: string;
+  };
+}) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [contentType, setContentType] = useState<GeneratedPageContentType>("html-app");
+  const [sourceMode, setSourceMode] = useState<SourceMode>("inline");
+  const [html, setHtml] = useState(demoHtmlApp);
+  const [reactCode, setReactCode] = useState(demoReactCode);
+  const [css, setCss] = useState(demoReactCss);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [clipboardBusy, setClipboardBusy] = useState(false);
+
+  const activeCode = contentType === "react" ? reactCode : html;
+  const activeStats = getCodeStats(activeCode);
+
+  const previewHtml = useMemo(() => {
+    if (contentType === "react") return buildReactDemoHtml(reactCode, css);
+    if (contentType === "html-app") return buildHtmlAppDocument(html);
+    return buildHtmlPreviewDocument(html);
+  }, [contentType, html, reactCode, css]);
+
+  function setImportedCode(content: string, mode: GeneratedPageContentType, name: string, origin: SourceMode) {
+    setContentType(mode);
+    setSourceMode(origin);
+
+    if (mode === "react") {
+      setReactCode(content);
+    } else {
+      setHtml(content);
+    }
+
+    setFileName(name);
+    setEditorOpen(false);
+  }
+
+  function switchMode(mode: GeneratedPageContentType) {
+    setContentType(mode);
+    setSourceMode("inline");
+
+    if (mode === "html-app" && html === demoLandingHtml) {
+      setHtml(demoHtmlApp);
+    }
+
+    if (mode === "html" && html === demoHtmlApp) {
+      setHtml(demoLandingHtml);
+    }
+  }
+
+  async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const isHtml =
+      file.type === "text/html" ||
+      file.name.toLowerCase().endsWith(".html") ||
+      file.name.toLowerCase().endsWith(".htm");
+
+    const isReact =
+      file.name.toLowerCase().endsWith(".jsx") ||
+      file.name.toLowerCase().endsWith(".tsx") ||
+      file.name.toLowerCase().endsWith(".js");
+
+    if (!isHtml && !isReact) {
+      alert("Selecciona un archivo .html, .htm, .jsx, .tsx o .js");
+      event.target.value = "";
+      return;
+    }
+
+    const content = await file.text();
+    const htmlMode = contentType === "html-app" ? "html-app" : "html";
+    setImportedCode(content, isReact ? "react" : htmlMode, file.name, "file");
+  }
+
+  async function pasteFromClipboard() {
+    try {
+      setClipboardBusy(true);
+      const content = await navigator.clipboard.readText();
+
+      if (!content.trim()) {
+        alert("El portapapeles está vacío.");
+        return;
+      }
+
+      const looksReact = /function\s+App\s*\(|export\s+default\s+function\s+App|import\s+React|from\s+["']react["']/.test(content);
+      const htmlMode = contentType === "html-app" ? "html-app" : "html";
+      setImportedCode(content, looksReact ? "react" : htmlMode, "Pegado desde portapapeles", "inline");
+    } catch {
+      alert("No pude leer el portapapeles. En Android es más seguro subir el archivo .tsx o .html.");
+    } finally {
+      setClipboardBusy(false);
+    }
+  }
+
+  return (
+    <div id="landing-demo-builder" className="scroll-mt-24 space-y-4">
+      <form action={createGeneratedPageAction} className="overflow-hidden rounded-[2rem] border bg-background shadow-sm">
+        <div className="flex flex-col gap-4 border-b bg-muted/20 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              <Code2 className="size-5" />
+            </div>
+            <div>
+              <h2 className="font-bold text-xl tracking-tight">Crear demo</h2>
+              <p className="text-muted-foreground text-sm">HTML App es el modo recomendado para demos livianas con pantallas internas, botones, WhatsApp, modales y cálculos.</p>
+            </div>
+          </div>
+
+          <input ref={fileInputRef} name="sourceFile" type="file" accept=".html,.htm,.jsx,.tsx,.js,text/html" className="hidden" onChange={handleFileImport} />
+          <div className="grid gap-2 sm:grid-cols-2 md:min-w-[360px]">
+            <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="size-4" />
+              Subir archivo
+            </Button>
+            <Button type="button" variant="outline" className="gap-2 rounded-xl" onClick={pasteFromClipboard} disabled={clipboardBusy}>
+              {clipboardBusy ? "Pegando..." : "Pegar"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)]">
+          <div className="space-y-4">
+            {(fileName || activeStats.chars > 0) && (
+              <div className="rounded-2xl border bg-muted/40 p-3 text-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium">{fileName || "Código cargado"}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {activeStats.lines.toLocaleString("es-CL")} líneas · {activeStats.chars.toLocaleString("es-CL")} caracteres · modo {contentType === "react" ? "React" : contentType === "html-app" ? "HTML App" : "HTML"} · origen {sourceMode === "file" ? "archivo" : "inline"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSourceMode("inline");
+                      setEditorOpen((value) => !value);
+                    }}
+                    className="rounded-xl border bg-background px-3 py-2 font-medium text-xs"
+                  >
+                    {editorOpen ? "Ocultar código" : "Editar código"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <input type="hidden" name="contentType" value={contentType} />
+            <input type="hidden" name="sourceMode" value={sourceMode} />
+            <input type="hidden" name="prospectId" value={initialValues?.prospectId || ""} />
+            <input type="hidden" name="html" value={sourceMode === "file" ? "" : html} />
+            <input type="hidden" name="reactCode" value={sourceMode === "file" ? "" : reactCode} />
+            <input type="hidden" name="css" value={css} />
+
+            <div className="grid gap-2 rounded-2xl border bg-muted/20 p-2 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => switchMode("html-app")}
+                className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
+                  contentType === "html-app" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
+                }`}
+              >
+                HTML App
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode("html")}
+                className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
+                  contentType === "html" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
+                }`}
+              >
+                HTML
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode("react")}
+                className={`rounded-xl px-4 py-3 font-semibold text-sm transition ${
+                  contentType === "react" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-background"
+                }`}
+              >
+                React Demo
+              </button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="font-medium text-sm" htmlFor="title">Título de la demo</label>
+                <Input id="title" name="title" defaultValue={initialValues?.title || "Cotiza tu video profesional"} />
+              </div>
+              <div className="space-y-2">
+                <label className="font-medium text-sm" htmlFor="clientName">Nombre del prospecto</label>
+                <Input id="clientName" name="clientName" defaultValue={initialValues?.clientName || "Cliente demo"} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <label className="font-medium text-sm" htmlFor="niche">Tipo de negocio</label>
+                <select
+                  id="niche"
+                  name="niche"
+                  defaultValue={initialValues?.niche || "Producción Audiovisual"}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {businessTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {editorOpen ? (
+              contentType !== "react" ? (
+                <div className="space-y-2">
+                  <label className="font-medium text-sm" htmlFor="htmlEditor">HTML completo</label>
+                  <Textarea
+                    id="htmlEditor"
+                    className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs"
+                    value={html}
+                    onChange={(event) => {
+                      setSourceMode("inline");
+                      setHtml(event.target.value);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="font-medium text-sm" htmlFor="reactCodeEditor">Código React</label>
+                    <Textarea
+                      id="reactCodeEditor"
+                      className="max-h-[70dvh] min-h-[280px] overflow-y-auto rounded-2xl font-mono text-xs"
+                      value={reactCode}
+                      onChange={(event) => {
+                        setSourceMode("inline");
+                        setReactCode(event.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-medium text-sm" htmlFor="cssEditor">CSS opcional</label>
+                    <Textarea
+                      id="cssEditor"
+                      className="max-h-[240px] min-h-[110px] overflow-y-auto rounded-2xl font-mono text-xs"
+                      value={css}
+                      onChange={(event) => setCss(event.target.value)}
+                    />
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="rounded-2xl border bg-muted/30 p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="font-medium text-sm">Vista compacta del código</p>
+                  <span className="rounded-full bg-background px-2 py-1 text-muted-foreground text-xs">{sourceMode === "file" ? "Se enviará como archivo" : "Inline"}</span>
+                </div>
+                <pre className="max-h-[240px] overflow-hidden whitespace-pre-wrap rounded-xl bg-background p-3 font-mono text-[11px] text-muted-foreground">
+                  {getCodePreview(activeCode)}
+                  {activeStats.lines > 28 ? "\n\n... código completo cargado, usa Editar código solo si necesitas modificarlo ..." : ""}
+                </pre>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full gap-2 rounded-xl py-6 text-base sm:w-auto sm:px-6">
+              <Rocket className="size-4" />
+              Guardar demo y generar link
+            </Button>
+          </div>
+
+          <section className="overflow-hidden rounded-[2rem] border bg-gradient-to-b from-background to-muted/20 p-3 shadow-sm">
+            <div className="mb-3 flex items-center justify-between px-1">
+              <div>
+                <p className="flex items-center gap-2 font-semibold text-sm">
+                  <Eye className="size-4" />
+                  Visor móvil
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-emerald-700 text-xs">
+                    <span className="size-1.5 rounded-full bg-emerald-500" /> Live preview
+                  </span>
+                </p>
+                <p className="text-muted-foreground text-xs">Preview largo tipo iPhone para recorrer la landing completa.</p>
+              </div>
+              <div className="rounded-xl border bg-background p-2 text-primary">
+                <Smartphone className="size-4" />
+              </div>
+            </div>
+
+            <div className="relative mx-auto h-[82dvh] min-h-[720px] w-full max-w-[430px] overflow-hidden rounded-[3.1rem] border-[10px] border-neutral-950 bg-neutral-950 p-2 shadow-[0_42px_120px_rgba(0,0,0,.30)] lg:h-[calc(100dvh-11rem)] lg:max-h-[980px]">
+              <div className="absolute left-1/2 top-2 z-20 h-7 w-32 -translate-x-1/2 rounded-b-3xl bg-neutral-950" />
+              <div className="absolute left-1/2 top-4 z-30 h-1.5 w-14 -translate-x-1/2 rounded-full bg-neutral-700" />
+              <div className="flex h-full w-full flex-col overflow-hidden rounded-[2.25rem] border border-white/10 bg-white">
+                <div className="flex h-11 shrink-0 items-center justify-between border-b bg-neutral-950 px-5 text-[11px] text-white">
+                  <span>{contentType === "react" ? "React Demo" : contentType === "html-app" ? "HTML App" : "HTML Preview"}</span>
+                  <span className="inline-flex items-center gap-1"><Eye className="size-3" /> Live</span>
+                </div>
+                <iframe
+                  title="Preview demo compartible"
+                  srcDoc={previewHtml}
+                  sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  className="h-full min-h-0 flex-1 border-0 bg-white"
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+      </form>
+    </div>
+  );
+}
