@@ -2,103 +2,15 @@ import { redirect } from "next/navigation";
 
 import Link from "next/link";
 
-import {
-  ArrowRight,
-  BadgePercent,
-  BarChart3,
-  Calculator,
-  CheckCircle2,
-  FileText,
-  Package,
-  Paintbrush,
-  Settings,
-  Store,
-  TrendingUp,
-  Users,
-  AlertCircle,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Store } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireBusinessUserAuth } from "@/fabrick/auth/require-business-user";
+import { ADMIN_MODULES } from "@/fabrick/navigation/admin-modules";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-const MODULES = [
-  {
-    href: "/admin/crm",
-    label: "CRM & Agenda",
-    description: "Clientes, citas y seguimiento comercial",
-    icon: BarChart3,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-  },
-  {
-    href: "/admin/customers",
-    label: "Clientes",
-    description: "Directorio y segmentación de clientes",
-    icon: Users,
-    color: "text-violet-500",
-    bg: "bg-violet-500/10",
-  },
-  {
-    href: "/admin/productos",
-    label: "Productos",
-    description: "Catálogo, precios y disponibilidad",
-    icon: Package,
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
-  },
-  {
-    href: "/admin/analytics",
-    label: "Analytics",
-    description: "Ventas, tráfico y proyecciones",
-    icon: TrendingUp,
-    color: "text-green-500",
-    bg: "bg-green-500/10",
-  },
-  {
-    href: "/admin/contabilidad",
-    label: "Contabilidad / F29",
-    description: "SII, declaración F29 y carpeta tributaria",
-    icon: Calculator,
-    color: "text-red-500",
-    bg: "bg-red-500/10",
-  },
-  {
-    href: "/admin/beneficios",
-    label: "Beneficios Fiscales",
-    description: "Ahorra impuestos con créditos y beneficios tributarios",
-    icon: BadgePercent,
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
-  },
-  {
-    href: "/admin/cotizaciones",
-    label: "Cotizaciones",
-    description: "Propuestas, seguimiento y conversiones",
-    icon: FileText,
-    color: "text-cyan-500",
-    bg: "bg-cyan-500/10",
-  },
-  {
-    href: "/admin/diseno",
-    label: "Diseño",
-    description: "Colores, fuentes e identidad de tu tienda",
-    icon: Paintbrush,
-    color: "text-pink-500",
-    bg: "bg-pink-500/10",
-  },
-  {
-    href: "/admin/configuracion",
-    label: "Configuración",
-    description: "Datos, horario y métodos de pago",
-    icon: Settings,
-    color: "text-zinc-500",
-    bg: "bg-zinc-500/10",
-  },
-] as const;
 
 export default async function AdminHomePage() {
   const auth = await requireBusinessUserAuth();
@@ -125,11 +37,11 @@ export default async function AdminHomePage() {
           </p>
         </div>
         <Link
-          href="/"
+          href="/admin/e-commerce"
           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           <Store className="h-4 w-4" />
-          Ver mi tienda
+          Ver vitrina e-commerce
         </Link>
       </section>
 
@@ -175,7 +87,7 @@ export default async function AdminHomePage() {
       <div>
         <h2 className="mb-3 font-semibold text-lg">Módulos</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {MODULES.map(({ href, label, description, icon: Icon, color, bg }) => (
+          {ADMIN_MODULES.map(({ href, label, description, icon: Icon, color, bg }) => (
             <Link key={href} href={href}>
               <Card className="group h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardContent className="flex flex-col gap-3 p-4">
