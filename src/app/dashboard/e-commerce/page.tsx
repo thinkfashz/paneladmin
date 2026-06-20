@@ -1,4 +1,4 @@
-import OmnifixStoreClient from "./omnifix-store-client";
+import EcommerceModulePage from "@/fabrick/modules/e-commerce/page";
 
 export const metadata = {
   title: "Omnifix Store | Dashboard E-commerce",
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function DashboardEcommercePage() {
-  return <OmnifixStoreClient />;
+  return <EcommerceModulePage />;
 }
