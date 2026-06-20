@@ -1,25 +1,16 @@
 import Link from "next/link";
 
-import { siX } from "simple-icons";
-
-import { SimpleIcon } from "@/components/simple-icon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SidebarSupportCard() {
   return (
     <Card size="sm" className="shadow-none group-data-[collapsible=icon]:hidden">
       <CardHeader className="px-4">
-        <CardTitle className="text-sm">Looking for something more?</CardTitle>
+        <CardTitle className="text-sm">Módulos Fabrick activos</CardTitle>
         <CardDescription>
-          Open an issue or do reach out to me on&nbsp;
-          <Link
-            href="https://x.com/arhamkhnz"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Reach out on X"
-            className="inline-flex items-center text-foreground"
-          >
-            <SimpleIcon icon={siX} aria-hidden className="size-3 fill-current" />
+          Admin, CRM, Page Engine y E-commerce corren sobre la estructura original del dashboard. Revisa el hub en&nbsp;
+          <Link href="/admin" className="font-medium text-foreground underline-offset-4 hover:underline">
+            /admin
           </Link>
           .
         </CardDescription>
