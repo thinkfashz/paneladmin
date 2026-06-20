@@ -160,19 +160,25 @@ export const sidebarItems: NavGroup[] = [
     label: "Módulos Fabrick",
     items: [
       {
-        title: "Admin Hub",
-        url: "/admin",
-        icon: LayoutDashboard,
+        title: "Page Engine",
+        url: "/dashboard/page-engine",
+        icon: Layers,
+        subItems: [
+          { title: "Landing Builder", url: "/dashboard/page-engine", icon: Layers },
+          { title: "Plantillas HTML", url: "/admin/templates", icon: BookTemplate },
+          { title: "Páginas Generadas", url: "/admin/generated-pages", icon: FileStack },
+          { title: "Páginas por Token", url: "/admin/public-token-pages", icon: KeyRound },
+          { title: "Estadísticas Páginas", url: "/admin/page-analytics", icon: LineChart },
+        ],
       },
       {
-        title: "Estado DB",
-        url: "/admin/database-status",
-        icon: Database,
-      },
-      {
-        title: "F29 / SII",
-        url: "/admin/contabilidad",
-        icon: Banknote,
+        title: "Vitrina Omnifix",
+        url: "/dashboard/e-commerce",
+        icon: ShoppingBag,
+        subItems: [
+          { title: "Tienda", url: "/dashboard/e-commerce", icon: ShoppingBag },
+          { title: "Checkout", url: "/dashboard/e-commerce#checkout", icon: CreditCard },
+        ],
       },
       {
         title: "CRM Fabrick",
@@ -185,9 +191,24 @@ export const sidebarItems: NavGroup[] = [
         icon: Users,
       },
       {
+        title: "Productos Fabrick",
+        url: "/admin/productos",
+        icon: ShoppingBag,
+      },
+      {
         title: "Cotizaciones",
         url: "/admin/cotizaciones",
         icon: FileText,
+      },
+      {
+        title: "F29 / SII",
+        url: "/admin/contabilidad",
+        icon: Banknote,
+      },
+      {
+        title: "Estado DB",
+        url: "/admin/database-status",
+        icon: Database,
       },
       {
         title: "Diseño de marca",
@@ -195,32 +216,11 @@ export const sidebarItems: NavGroup[] = [
         icon: Paintbrush,
       },
       {
-        title: "Growth",
-        url: "/admin/landing-builder",
-        icon: Layers,
-        subItems: [
-          { title: "Landing Builder", url: "/admin/landing-builder", icon: Layers },
-          { title: "Plantillas HTML", url: "/admin/templates", icon: BookTemplate },
-          { title: "Páginas Generadas", url: "/admin/generated-pages", icon: FileStack },
-          { title: "Páginas por Token", url: "/admin/public-token-pages", icon: KeyRound },
-          { title: "Estadísticas Páginas", url: "/admin/page-analytics", icon: LineChart },
-        ],
-      },
-      {
-        title: "Commerce",
-        url: "/admin/ecommerce",
-        icon: ShoppingBag,
-        subItems: [
-          { title: "E-commerce", url: "/admin/ecommerce", icon: ShoppingBag },
-          { title: "Checkout", url: "/admin/checkout", icon: CreditCard },
-        ],
-      },
-      {
         title: "Configuración",
-        url: "/admin/business-settings",
+        url: "/admin/configuracion",
         icon: Settings,
         subItems: [
-          { title: "Negocio", url: "/admin/business-settings", icon: Settings },
+          { title: "Negocio", url: "/admin/configuracion", icon: Settings },
           { title: "Integraciones", url: "/admin/integrations", icon: Plug },
         ],
       },
