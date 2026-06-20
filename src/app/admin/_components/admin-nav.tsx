@@ -2,32 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BadgePercent,
-  BarChart3,
-  Calculator,
-  FileText,
-  LayoutDashboard,
-  Package,
-  Paintbrush,
-  Settings,
-  TrendingUp,
-  Users,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { LayoutDashboard } from "lucide-react";
 
-const adminNav = [
-  { href: "/admin/crm", label: "CRM", icon: BarChart3 },
-  { href: "/admin/customers", label: "Clientes", icon: Users },
-  { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
-  { href: "/admin/contabilidad", label: "F29 / SII", icon: Calculator },
-  { href: "/admin/beneficios", label: "Beneficios", icon: BadgePercent },
-  { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
-  { href: "/admin/diseno", label: "Diseño", icon: Paintbrush },
-  { href: "/admin/configuracion", label: "Config.", icon: Settings },
-];
+import { Separator } from "@/components/ui/separator";
+import { ADMIN_PRIMARY_NAV } from "@/fabrick/navigation/admin-modules";
+import { cn } from "@/lib/utils";
 
 export function AdminNav() {
   const pathname = usePathname();
@@ -43,8 +22,8 @@ export function AdminNav() {
         </Link>
         <Separator orientation="vertical" className="h-5" />
         <nav className="flex flex-1 items-center gap-0.5 overflow-x-auto scrollbar-none">
-          {adminNav.map(({ href, label, icon: Icon }) => {
-            const active = pathname.startsWith(href);
+          {ADMIN_PRIMARY_NAV.map(({ href, shortLabel, icon: Icon }) => {
+            const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
             return (
               <Link
                 key={href}
@@ -57,18 +36,18 @@ export function AdminNav() {
                 )}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" />
-                <span>{label}</span>
+                <span>{shortLabel}</span>
               </Link>
             );
           })}
         </nav>
         <Separator orientation="vertical" className="h-5" />
         <Link
-          href="/dashboard/default"
+          href="/admin"
           className="flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <LayoutDashboard className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Dashboard</span>
+          <span className="hidden sm:inline">Hub</span>
         </Link>
       </div>
     </header>
