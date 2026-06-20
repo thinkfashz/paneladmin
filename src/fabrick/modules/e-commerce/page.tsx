@@ -1,4 +1,4 @@
-import OmnifixStoreClient from "@/app/dashboard/e-commerce/omnifix-store-client";
+import OmnifixStoreClient from "./components/omnifix-store-client";
 
 export function EcommerceModulePage() {
   return <OmnifixStoreClient />;
