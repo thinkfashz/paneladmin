@@ -28,10 +28,10 @@ export default async function AdminHomePage() {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
       {/* Encabezado */}
-      <section className="flex flex-col justify-between gap-4 rounded-2xl border bg-background p-5 shadow-sm md:flex-row md:items-center">
+      <section className="omnifix-glow-card flex flex-col justify-between gap-4 rounded-2xl border bg-background p-5 shadow-sm md:flex-row md:items-center">
         <div>
           <p className="font-medium text-muted-foreground text-sm">{saludo} 👋</p>
-          <h1 className="font-bold text-2xl tracking-tight md:text-3xl">Panel de Administración</h1>
+          <h1 className="font-bold text-2xl tracking-tight md:text-3xl">Panel de Administración Omnifix</h1>
           <p className="mt-1 text-muted-foreground text-sm">
             Período: <span className="capitalize">{mesNombre}</span>
           </p>
@@ -41,7 +41,7 @@ export default async function AdminHomePage() {
           className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           <Store className="h-4 w-4" />
-          Ver vitrina e-commerce
+          Ver vitrina Omnifix
         </Link>
       </section>
 
@@ -85,7 +85,7 @@ export default async function AdminHomePage() {
 
       {/* Módulos */}
       <div>
-        <h2 className="mb-3 font-semibold text-lg">Módulos</h2>
+        <h2 className="mb-3 font-semibold text-lg">Módulos Omnifix</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {ADMIN_MODULES.map(({ href, label, description, icon: Icon, color, bg }) => (
             <Link key={href} href={href}>
