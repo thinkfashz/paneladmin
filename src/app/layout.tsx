@@ -13,8 +13,34 @@ import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provi
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: APP_CONFIG.meta.title,
+  metadataBase: new URL(APP_CONFIG.url),
+  title: {
+    default: APP_CONFIG.meta.title,
+    template: "%s | Omnifix",
+  },
   description: APP_CONFIG.meta.description,
+  applicationName: "Omnifix Admin",
+  alternates: {
+    canonical: APP_CONFIG.url,
+  },
+  openGraph: {
+    title: APP_CONFIG.meta.title,
+    description: APP_CONFIG.meta.description,
+    url: APP_CONFIG.url,
+    siteName: "Omnifix",
+    locale: "es_CL",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: APP_CONFIG.meta.title,
+    description: APP_CONFIG.meta.description,
+  },
+  keywords: ["Omnifix", "e-commerce", "admin", "dashboard", "reparaciones", "servicio técnico", "tienda"],
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -22,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     PREFERENCE_DEFAULTS;
   return (
     <html
-      lang="en"
+      lang="es-CL"
       data-theme-mode={theme_mode}
       data-theme-preset={theme_preset}
       data-content-layout={content_layout}
@@ -36,7 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         {/* Applies theme and layout preferences on load to avoid flicker and unnecessary server rerenders. */}
         <ThemeBootScript />
       </head>
-      <body className={`${fontVars} min-h-screen antialiased`}>
+      <body className={`${fontVars} min-h-screen antialiased omnifix-admin-surface`}>
         <TooltipProvider>
           <PreferencesStoreProvider
             themeMode={theme_mode}
