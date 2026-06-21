@@ -1,7 +1,7 @@
 export const users = [
   {
     id: "1",
-    name: "Eduardo Fabrick",
+    name: "Eduardo Omnifix",
     username: "faubricioedms",
     email: "faubricioedms@gmail.com",
     avatar: "https://avatars.githubusercontent.com/u/225802060?v=4",
@@ -9,9 +9,9 @@ export const users = [
   },
   {
     id: "2",
-    name: "Soluciones Fabrick",
-    username: "soluciones-fabrick",
-    email: "admin@solucionesfabrick.com",
+    name: "Omnifix",
+    username: "omnifix-store",
+    email: "admin@omnifix.cl",
     avatar: "",
     role: "admin",
   },
