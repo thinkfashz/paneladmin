@@ -60,88 +60,27 @@ export const sidebarItems: NavGroup[] = [
     id: 1,
     label: "Dashboards",
     items: [
-      {
-        title: "Default",
-        url: "/dashboard/default",
-        icon: LayoutDashboard,
-      },
-      {
-        title: "CRM",
-        url: "/dashboard/crm",
-        icon: ChartBar,
-      },
-      {
-        title: "Finance",
-        url: "/dashboard/finance",
-        icon: Banknote,
-      },
-      {
-        title: "Analytics",
-        url: "/dashboard/analytics",
-        icon: Gauge,
-      },
-      {
-        title: "Productivity",
-        url: "/dashboard/productivity",
-        icon: ListTodo,
-      },
-      {
-        title: "E-commerce",
-        url: "/dashboard/e-commerce",
-        icon: ShoppingBag,
-      },
-      {
-        title: "Academy",
-        url: "/dashboard/academy",
-        icon: GraduationCap,
-        isNew: true,
-      },
-      {
-        title: "Logistics",
-        url: "/dashboard/logistics",
-        icon: Forklift,
-      },
+      { title: "Default", url: "/dashboard/default", icon: LayoutDashboard },
+      { title: "CRM", url: "/dashboard/crm", icon: ChartBar },
+      { title: "Finance", url: "/dashboard/finance", icon: Banknote },
+      { title: "Analytics", url: "/dashboard/analytics", icon: Gauge },
+      { title: "Productivity", url: "/dashboard/productivity", icon: ListTodo },
+      { title: "E-commerce", url: "/dashboard/e-commerce", icon: ShoppingBag },
+      { title: "Academy", url: "/dashboard/academy", icon: GraduationCap, isNew: true },
+      { title: "Logistics", url: "/dashboard/logistics", icon: Forklift },
     ],
   },
   {
     id: 2,
     label: "Pages",
     items: [
-      {
-        title: "Email",
-        url: "/email",
-        icon: Mail,
-      },
-      {
-        title: "Chat",
-        url: "/chat",
-        icon: MessageSquare,
-      },
-      {
-        title: "Calendar",
-        url: "/calendar",
-        icon: Calendar,
-      },
-      {
-        title: "Kanban",
-        url: "/kanban",
-        icon: Kanban,
-      },
-      {
-        title: "Invoice",
-        url: "/invoice",
-        icon: ReceiptText,
-      },
-      {
-        title: "Users",
-        url: "/users",
-        icon: Users,
-      },
-      {
-        title: "Roles",
-        url: "/roles",
-        icon: Lock,
-      },
+      { title: "Email", url: "/email", icon: Mail },
+      { title: "Chat", url: "/chat", icon: MessageSquare },
+      { title: "Calendar", url: "/calendar", icon: Calendar },
+      { title: "Kanban", url: "/kanban", icon: Kanban },
+      { title: "Invoice", url: "/invoice", icon: ReceiptText },
+      { title: "Users", url: "/users", icon: Users },
+      { title: "Roles", url: "/roles", icon: Lock },
       {
         title: "Authentication",
         url: "/auth",
@@ -157,7 +96,7 @@ export const sidebarItems: NavGroup[] = [
   },
   {
     id: 3,
-    label: "Módulos Fabrick",
+    label: "Módulos Omnifix",
     items: [
       {
         title: "Page Engine",
@@ -180,41 +119,13 @@ export const sidebarItems: NavGroup[] = [
           { title: "Checkout", url: "/dashboard/e-commerce#checkout", icon: CreditCard },
         ],
       },
-      {
-        title: "CRM Fabrick",
-        url: "/admin/crm",
-        icon: ChartBar,
-      },
-      {
-        title: "Clientes Fabrick",
-        url: "/admin/customers",
-        icon: Users,
-      },
-      {
-        title: "Productos Fabrick",
-        url: "/admin/productos",
-        icon: ShoppingBag,
-      },
-      {
-        title: "Cotizaciones",
-        url: "/admin/cotizaciones",
-        icon: FileText,
-      },
-      {
-        title: "F29 / SII",
-        url: "/admin/contabilidad",
-        icon: Banknote,
-      },
-      {
-        title: "Estado DB",
-        url: "/admin/database-status",
-        icon: Database,
-      },
-      {
-        title: "Diseño de marca",
-        url: "/admin/diseno",
-        icon: Paintbrush,
-      },
+      { title: "CRM Omnifix", url: "/admin/crm", icon: ChartBar },
+      { title: "Clientes Omnifix", url: "/admin/customers", icon: Users },
+      { title: "Productos Omnifix", url: "/admin/productos", icon: ShoppingBag },
+      { title: "Cotizaciones", url: "/admin/cotizaciones", icon: FileText },
+      { title: "F29 / SII", url: "/admin/contabilidad", icon: Banknote },
+      { title: "Estado DB", url: "/admin/database-status", icon: Database },
+      { title: "Diseño de marca", url: "/admin/diseno", icon: Paintbrush },
       {
         title: "Configuración",
         url: "/admin/configuracion",
