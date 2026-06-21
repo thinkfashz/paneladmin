@@ -3,12 +3,13 @@ import packageJson from "../../package.json";
 const currentYear = new Date().getFullYear();
 
 export const APP_CONFIG = {
-  name: "Studio Admin",
+  name: "Omnifix Admin",
   version: packageJson.version,
-  copyright: `© ${currentYear}, Studio Admin.`,
+  copyright: `© ${currentYear}, Omnifix. Todo tiene solución.`,
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://admin-nine.vercel.app",
   meta: {
-    title: "Studio Admin - Modern Next.js Dashboard Starter Template",
+    title: "Omnifix Admin | Dashboard, tienda y operaciones",
     description:
-      "Studio Admin is a modern, open-source dashboard starter template built with Next.js 16, Tailwind CSS v4, and shadcn/ui. Perfect for SaaS apps, admin panels, and internal tools—fully customizable and production-ready.",
+      "Omnifix Admin centraliza la vitrina e-commerce, clientes, productos, Page Engine, métricas y operaciones técnicas con una experiencia azul, moderna y mobile-first.",
   },
 };
