@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { cookies } from "next/headers";
 
@@ -20,7 +20,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
         {
           "--sidebar-width": "18rem",
           "--sidebar-width-icon": "4.5rem",
-        } as React.CSSProperties
+        } as CSSProperties
       }
     >
       <AppSidebar />
