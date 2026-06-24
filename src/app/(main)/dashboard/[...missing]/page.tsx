@@ -2,12 +2,13 @@ import { ModulePlaceholder } from "@/fabrick/modules/module-placeholder";
 
 export const dynamic = "force-dynamic";
 
-type DashboardMissingModulePageProps = {
-  params: {
+type MissingDashboardPageProps = {
+  params: Promise<{
     missing?: string[];
-  };
+  }>;
 };
 
-export default function DashboardMissingModulePage({ params }: DashboardMissingModulePageProps) {
-  return <ModulePlaceholder section="dashboard" segments={params.missing ?? []} />;
+export default async function MissingDashboardPage({ params }: MissingDashboardPageProps) {
+  const { missing } = await params;
+  return <ModulePlaceholder section="dashboard" segments={missing ?? []} />;
 }
