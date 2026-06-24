@@ -220,6 +220,7 @@ These serve as the fallback; there is no separate default.css file. */
   }
 
   .omnifix-glass-sidebar [data-sidebar="sidebar"] {
+    position: relative;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.13);
     border-radius: 2rem;
