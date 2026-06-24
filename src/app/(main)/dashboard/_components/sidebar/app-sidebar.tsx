@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 import { BadgeCheck, Radio } from "lucide-react";
-import { useShallow } from "zustand/react/shallow";
 
 import {
   Sidebar,
@@ -14,25 +13,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { OmnifixLogo } from "@/fabrick/branding/omnifix-logo";
 import { rootUser } from "@/data/users";
-import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
-import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
+import { OmnifixLogo } from "@/fabrick/branding/omnifix-logo";
 import { cn } from "@/lib/utils";
+import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { isSynced } = usePreferencesStore(
-    useShallow((s) => ({
-      isSynced: s.isSynced,
-    })),
-  );
-
-  // Mantiene una experiencia estable tipo glass/rail aunque existan preferencias anteriores guardadas.
-  const _ready = isSynced;
-
   return (
     <Sidebar
       {...props}
@@ -65,7 +54,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.06] px-3 py-2 text-[11px] font-black uppercase tracking-widest text-rose-100/80 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[.06] px-3 py-2 font-black text-[11px] text-rose-100/80 uppercase tracking-widest group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <Radio className="size-3.5 text-rose-200" />
           <span className="group-data-[collapsible=icon]:hidden">Menú</span>
         </div>
