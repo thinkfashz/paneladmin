@@ -5,6 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { OmnifixLoading } from "@/fabrick/branding/omnifix-loading";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -12,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { loginAction } from "@/fabrick/auth/actions/login-action";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  email: z.string().email({ message: "Ingresa un correo válido." }),
+  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   remember: z.boolean().optional(),
 });
 
@@ -27,14 +28,14 @@ export function LoginForm() {
     },
   });
 
+  const isSubmitting = form.formState.isSubmitting;
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      // Using standard static import for Next.js Server Actions
       const result = await loginAction(data.email, data.password);
 
       if (result.ok) {
         toast.success(result.message);
-        // Navigate or update state as needed
         window.location.href = "/dashboard";
       } else {
         toast.error(result.message);
@@ -52,14 +53,15 @@ export function LoginForm() {
           name="email"
           render={({ field, fieldState }) => (
             <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="login-email">Email Address</FieldLabel>
+              <FieldLabel htmlFor="login-email">Correo electrónico</FieldLabel>
               <Input
                 {...field}
                 id="login-email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="tu@correo.com"
                 autoComplete="email"
                 aria-invalid={fieldState.invalid}
+                disabled={isSubmitting}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -70,7 +72,7 @@ export function LoginForm() {
           name="password"
           render={({ field, fieldState }) => (
             <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="login-password">Password</FieldLabel>
+              <FieldLabel htmlFor="login-password">Contraseña</FieldLabel>
               <Input
                 {...field}
                 id="login-password"
@@ -78,6 +80,7 @@ export function LoginForm() {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 aria-invalid={fieldState.invalid}
+                disabled={isSubmitting}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -94,10 +97,11 @@ export function LoginForm() {
                 checked={field.value}
                 onCheckedChange={(checked) => field.onChange(Boolean(checked))}
                 aria-invalid={fieldState.invalid}
+                disabled={isSubmitting}
               />
               <FieldContent>
                 <FieldLabel htmlFor="login-remember" className="font-normal">
-                  Remember me for 30 days
+                  Recordarme por 30 días
                 </FieldLabel>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </FieldContent>
@@ -105,8 +109,8 @@ export function LoginForm() {
           )}
         />
       </FieldGroup>
-      <Button className="w-full" type="submit">
-        Login
+      <Button className="min-h-11 w-full" type="submit" disabled={isSubmitting}>
+        {isSubmitting ? <OmnifixLoading compact label="Ingresando" /> : "Entrar al panel"}
       </Button>
     </form>
   );
