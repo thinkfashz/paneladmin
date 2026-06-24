@@ -22,9 +22,8 @@ export default async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Primer inicio: si la app aún no está configurada, todo el panel
-  // redirige al asistente. Una vez completado, el asistente queda
-  // bloqueado (candado) y redirige al login.
+  // Primer inicio: el setup protege solo rutas internas del panel.
+  // La portada pública de tienda (/) debe poder cargar sin mostrar el admin.
   const setupDone = isSetupComplete();
 
   if (pathname.startsWith("/setup")) {
@@ -36,8 +35,8 @@ export default async function proxy(request: NextRequest) {
 
   if (
     !setupDone &&
-    (pathname === "/" ||
-      pathname.startsWith("/auth") ||
+    (pathname.startsWith("/auth") ||
+      pathname.startsWith("/admin") ||
       pathname.startsWith("/dashboard") ||
       pathname.startsWith("/superadmin"))
   ) {
@@ -51,7 +50,12 @@ export default async function proxy(request: NextRequest) {
     const referer = request.headers.get("referer") || null;
 
     // Solo logeamos accesos al panel, superadmin y login por ahora (fase uno)
-    if (pathname.startsWith("/superadmin") || pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) {
+    if (
+      pathname.startsWith("/superadmin") ||
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/auth")
+    ) {
       await writeActivityRecord({
         eventType: "page_view",
         path: pathname,
@@ -68,8 +72,9 @@ export default async function proxy(request: NextRequest) {
   // Phase two checks: Require Auth logic
   const isSuperadminRoute = pathname.startsWith("/superadmin");
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isAdminRoute = pathname.startsWith("/admin");
 
-  if (isSuperadminRoute || isDashboardRoute) {
+  if (isSuperadminRoute || isDashboardRoute || isAdminRoute) {
     const allCookies = request.cookies.getAll();
     const cookieObj = Object.fromEntries(allCookies.map((c) => [c.name, c.value]));
 
