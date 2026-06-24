@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {
           "--sidebar-width": "18rem",
           "--sidebar-width-icon": "4.5rem",
-        } as React.CSSProperties
+        } as CSSProperties
       }
     >
       <AppSidebar />
