@@ -98,6 +98,8 @@ These serve as the fallback; there is no separate default.css file. */
   --omnifix-navy: #06111f;
   --omnifix-chrome: #dbeafe;
   --omnifix-surface: #f8fbff;
+  --omnifix-red: #e11d48;
+  --omnifix-rose: #fb7185;
 }
 
 .dark {
@@ -156,6 +158,14 @@ These serve as the fallback; there is no separate default.css file. */
       var(--background);
   }
 
+  .omnifix-admin-workspace {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(251, 113, 133, 0.22), transparent 28%),
+      radial-gradient(circle at 100% 4%, rgba(225, 29, 72, 0.18), transparent 30%),
+      radial-gradient(circle at 50% 100%, rgba(0, 82, 255, 0.12), transparent 34%),
+      linear-gradient(135deg, #020204 0%, #120507 45%, #2a050b 100%);
+  }
+
   .omnifix-glow-card {
     position: relative;
     overflow: hidden;
@@ -208,6 +218,86 @@ These serve as the fallback; there is no separate default.css file. */
     background: linear-gradient(90deg, #f8fafc, var(--omnifix-cyan), var(--omnifix-blue));
     animation: omnifix-loading-slide 1.15s ease-in-out infinite;
   }
+
+  .omnifix-glass-sidebar [data-sidebar="sidebar"] {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 2rem;
+    color: rgba(255, 255, 255, 0.92);
+    background:
+      radial-gradient(circle at 25% 8%, rgba(251, 113, 133, 0.34), transparent 32%),
+      radial-gradient(circle at 90% 65%, rgba(190, 18, 60, 0.26), transparent 40%),
+      linear-gradient(160deg, rgba(20, 5, 8, 0.78), rgba(77, 8, 17, 0.58) 46%, rgba(5, 5, 8, 0.82));
+    box-shadow:
+      0 34px 90px rgba(0, 0, 0, 0.44),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 0 80px rgba(225, 29, 72, 0.16);
+    backdrop-filter: blur(28px) saturate(150%);
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="sidebar"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 18%),
+      radial-gradient(circle at 10% 50%, rgba(255, 255, 255, 0.12), transparent 18%);
+    opacity: 0.72;
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="header"],
+  .omnifix-glass-sidebar [data-sidebar="content"],
+  .omnifix-glass-sidebar [data-sidebar="footer"] {
+    position: relative;
+    z-index: 1;
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="content"] {
+    scrollbar-width: none;
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="group-label"] {
+    color: rgba(255, 228, 230, 0.58);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.66rem;
+    font-weight: 900;
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="menu-button"],
+  .omnifix-glass-sidebar [data-sidebar="menu-sub-button"] {
+    color: rgba(255, 241, 242, 0.74);
+    border-radius: 1.1rem;
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="menu-button"]:hover,
+  .omnifix-glass-sidebar [data-sidebar="menu-sub-button"]:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="menu-button"][data-active="true"],
+  .omnifix-glass-sidebar [data-sidebar="menu-sub-button"][data-active="true"] {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(251, 113, 133, 0.18));
+    box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.88), 0 14px 34px rgba(225, 29, 72, 0.18);
+  }
+
+  .omnifix-glass-sidebar .omnifix-brand-button {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .omnifix-glass-sidebar .omnifix-sidebar-sub {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .omnifix-glass-sidebar [data-sidebar="footer"] [data-sidebar="menu-button"] {
+    background: rgba(0, 0, 0, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 
 @layer utilities {
@@ -257,9 +347,6 @@ These serve as the fallback; there is no separate default.css file. */
   }
   html[data-font="roboto"] body {
     --font-sans: var(--font-roboto);
-  }
-  html[data-font="geist"] body {
-    --font-sans: var(--font-geist);
   }
   html[data-font="raleway"] body {
     --font-sans: var(--font-raleway);
