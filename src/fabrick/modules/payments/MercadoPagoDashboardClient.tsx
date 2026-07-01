@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, BadgeCheck, CreditCard, Loader2, RefreshCw, ShieldCheck, ShoppingBag, Wifi, WifiOff } from "lucide-react";
+import Link from "next/link";
+import { AlertCircle, BadgeCheck, CreditCard, FlaskConical, Loader2, RefreshCw, ShieldCheck, ShoppingBag, Wifi, WifiOff } from "lucide-react";
 
 type OrderRow = {
   id: string;
@@ -81,9 +82,14 @@ export default function MercadoPagoDashboardClient() {
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[.95] tracking-[-.06em] md:text-6xl">Pasarela conectada al checkout público.</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">Revisa configuración, modo de operación, cuenta conectada y órdenes creadas desde el checkout Omnifix.</p>
         </div>
-        <button onClick={() => void load()} disabled={loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-300 to-blue-600 px-5 text-sm font-black text-slate-950 disabled:opacity-60">
-          {loading ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />} Actualizar
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/pagos/mercadopago/test" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-5 text-sm font-black text-cyan-50 hover:bg-cyan-300/15">
+            <FlaskConical className="size-4" /> Probar sandbox
+          </Link>
+          <button onClick={() => void load()} disabled={loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-300 to-blue-600 px-5 text-sm font-black text-slate-950 disabled:opacity-60">
+            {loading ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />} Actualizar
+          </button>
+        </div>
       </div>
     </section>
 
@@ -129,6 +135,9 @@ export default function MercadoPagoDashboardClient() {
         <div className="mt-4 grid gap-2">
           {envRows.map(([label, value]) => <div key={label} className="rounded-2xl border bg-muted/30 p-3"><p className="text-xs font-black">{label}</p><p className="mt-1 text-xs text-muted-foreground">{value}</p></div>)}
         </div>
+        <Link href="/admin/pagos/mercadopago/test" className="mt-4 inline-flex w-full justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm font-black text-cyan-600">
+          Probar con credenciales TEST
+        </Link>
       </article>
 
       <article className="rounded-[2rem] border bg-card p-5 shadow-sm">
