@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 720" role="img" aria-label="Omnifix todo tiene solución">
+  <defs>
+    <linearGradient id="left" x1="360" y1="110" x2="520" y2="340" gradientUnits="userSpaceOnUse"><stop stop-color="#06142E"/><stop offset="1" stop-color="#020817"/></linearGradient>
+    <linearGradient id="right" x1="590" y1="70" x2="760" y2="360" gradientUnits="userSpaceOnUse"><stop stop-color="#05E6FF"/><stop offset=".45" stop-color="#0052FF"/><stop offset="1" stop-color="#06143A"/></linearGradient>
+    <linearGradient id="base" x1="390" y1="350" x2="675" y2="388" gradientUnits="userSpaceOnUse"><stop stop-color="#001C77"/><stop offset=".52" stop-color="#04D8FF"/><stop offset="1" stop-color="#0052FF"/></linearGradient>
+  </defs>
+  <g>
+    <path d="M585 80 430 378h174l-55-78h-64L586 122l50 96-30 138 108 86-37-94C638 252 599 142 585 80Z" fill="url(#left)"/>
+    <path d="M610 60c45 121 118 252 210 374l-98 24C657 356 612 214 588 78l22-18Z" fill="url(#right)"/>
+    <path d="M420 377h302l-43 58H423l-41-38 38-20Z" fill="url(#base)"/>
+    <path d="M618 80c26 109 84 227 149 310" stroke="#E7FBFF" stroke-width="5" stroke-linecap="round" fill="none" opacity=".56"/>
+  </g>
+  <text x="620" y="560" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="114" font-weight="900" letter-spacing="18" fill="#07142E">OMNIFI<tspan fill="#0052FF">X</tspan></text>
+  <line x1="172" y1="638" x2="292" y2="638" stroke="#0052FF" stroke-width="8" stroke-linecap="round"/>
+  <text x="620" y="655" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="28" fill="#07142E">TODO TIENE <tspan fill="#0052FF">SOLUCIÓN</tspan></text>
+  <line x1="948" y1="638" x2="1068" y2="638" stroke="#0052FF" stroke-width="8" stroke-linecap="round"/>
+</svg>
