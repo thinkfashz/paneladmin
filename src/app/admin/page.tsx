@@ -65,7 +65,7 @@ export default async function AdminHomePage() {
             <div className="grid gap-3">
               <Link href="/admin/database/sql" className="group rounded-[2rem] border border-cyan-300/25 bg-cyan-300/10 p-5 shadow-[0_20px_70px_rgba(0,82,255,.18)] transition hover:-translate-y-1 hover:bg-cyan-300/15">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="grid size-13 place-items-center rounded-2xl bg-cyan-300 text-slate-950">
+                  <div className="grid size-14 place-items-center rounded-2xl bg-cyan-300 text-slate-950">
                     <Database className="size-7" />
                   </div>
                   <span className="rounded-full bg-emerald-300/15 px-3 py-1 text-[10px] font-black uppercase tracking-[.18em] text-emerald-200">Nuevo</span>
