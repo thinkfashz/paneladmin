@@ -1,5 +1,5 @@
-import AdminHomePage, { dynamic } from "@/app/admin/page";
+import AdminHomePage from "@/app/admin/page";
 
-export { dynamic };
+export const dynamic = "force-dynamic";
 
 export default AdminHomePage;
